@@ -13,6 +13,8 @@ const emptyBook = {
   categoryId: '',
 };
 
+const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 function App() {
   const [activeView, setActiveView] = useState('inicio');
   const [books, setBooks] = useState([]);
@@ -40,38 +42,39 @@ function App() {
     setLoading(true);
     setMessage('');
 
-    try {
-      const [
-        booksRes,
-        usersRes,
-        loansRes,
-        rolesRes,
-        permissionsRes,
-        authorsRes,
-        categoriesRes,
-      ] =
-        await Promise.all([
-          api.get('/books'),
-          api.get('/users'),
-          api.get('/loans'),
-          api.get('/roles'),
-          api.get('/permissions'),
-          api.get('/books/authors/list'),
-          api.get('/books/categories/list'),
-        ]);
+    const requests = [
+      ['books', api.get('/books'), setBooks],
+      ['users', api.get('/users'), setUsers],
+      ['loans', api.get('/loans'), setLoans],
+      ['roles', api.get('/roles'), setRoles],
+      ['permissions', api.get('/permissions'), setPermissions],
+      ['authors', api.get('/books/authors/list'), setAuthors],
+      ['categories', api.get('/books/categories/list'), setCategories],
+    ];
 
-      setBooks(booksRes.data);
-      setUsers(usersRes.data);
-      setLoans(loansRes.data);
-      setRoles(rolesRes.data);
-      setPermissions(permissionsRes.data);
-      setAuthors(authorsRes.data);
-      setCategories(categoriesRes.data);
-    } catch (error) {
-      setMessage('No se pudo conectar con el backend. Revisa VITE_API_URL.');
-    } finally {
-      setLoading(false);
+    const results = await Promise.allSettled(
+      requests.map(([, request]) => request),
+    );
+
+    const failed = [];
+
+    results.forEach((result, index) => {
+      const [name, , setter] = requests[index];
+
+      if (result.status === 'fulfilled') {
+        setter(Array.isArray(result.value.data) ? result.value.data : []);
+      } else {
+        failed.push(name);
+      }
+    });
+
+    if (failed.length > 0) {
+      setMessage(
+        `No se pudieron cargar: ${failed.join(', ')}. API: ${apiBaseUrl}`,
+      );
     }
+
+    setLoading(false);
   }
 
   useEffect(() => {
