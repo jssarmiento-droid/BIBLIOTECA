@@ -225,6 +225,24 @@ dd {
   padding: 22px;
 }
 
+.inline-create {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+}
+
+.inline-create button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.field-note {
+  color: #6b5b2a;
+  font-size: 14px;
+  font-weight: 700;
+  margin: -6px 0 0;
+}
+
 input,
 select,
 textarea {
@@ -323,5 +341,9 @@ th {
   .hero {
     min-height: 520px;
     padding: 28px;
+  }
+
+  .inline-create {
+    grid-template-columns: 1fr;
   }
 }

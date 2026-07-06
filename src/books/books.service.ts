@@ -25,6 +25,33 @@ export class BooksService {
     });
   }
 
+  createAuthor(data: Record<string, unknown>) {
+    return this.prisma.author.create({
+      data: {
+        name: String(data.name ?? ''),
+        biography:
+          data.biography === undefined ? undefined : String(data.biography),
+      },
+    });
+  }
+
+  createCategory(data: Record<string, unknown>) {
+    const name = String(data.name ?? '');
+
+    return this.prisma.category.upsert({
+      where: { name },
+      update: {
+        description:
+          data.description === undefined ? undefined : String(data.description),
+      },
+      create: {
+        name,
+        description:
+          data.description === undefined ? undefined : String(data.description),
+      },
+    });
+  }
+
   async findOne(id: number) {
     const book = await this.prisma.book.findUnique({
       where: { id },

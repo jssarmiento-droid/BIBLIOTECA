@@ -25,6 +25,8 @@ function App() {
   const [authors, setAuthors] = useState([]);
   const [categories, setCategories] = useState([]);
   const [form, setForm] = useState(emptyBook);
+  const [authorForm, setAuthorForm] = useState({ name: '', biography: '' });
+  const [categoryForm, setCategoryForm] = useState({ name: '', description: '' });
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -106,6 +108,39 @@ function App() {
       setActiveView('catalogo');
     } catch (error) {
       setMessage('No se pudo agregar el libro. Verifica autorId y categoryId.');
+    }
+  }
+
+  async function createAuthor(event) {
+    event.preventDefault();
+    setMessage('');
+
+    try {
+      const response = await api.post('/books/authors', authorForm);
+      setAuthors((current) => [...current, response.data]);
+      setForm((current) => ({ ...current, authorId: String(response.data.id) }));
+      setAuthorForm({ name: '', biography: '' });
+      setMessage('Autor agregado correctamente.');
+    } catch (error) {
+      setMessage('No se pudo agregar el autor.');
+    }
+  }
+
+  async function createCategory(event) {
+    event.preventDefault();
+    setMessage('');
+
+    try {
+      const response = await api.post('/books/categories', categoryForm);
+      setCategories((current) => {
+        const withoutDuplicate = current.filter((item) => item.id !== response.data.id);
+        return [...withoutDuplicate, response.data];
+      });
+      setForm((current) => ({ ...current, categoryId: String(response.data.id) }));
+      setCategoryForm({ name: '', description: '' });
+      setMessage('Categoria agregada correctamente.');
+    } catch (error) {
+      setMessage('No se pudo agregar la categoria.');
     }
   }
 
@@ -214,6 +249,34 @@ function App() {
                   </option>
                 ))}
               </select>
+              {authors.length === 0 && (
+                <p className="field-note">No hay autores registrados. Crea uno aqui mismo.</p>
+              )}
+              <div className="inline-create">
+                <input
+                  onChange={(event) =>
+                    setAuthorForm((current) => ({
+                      ...current,
+                      name: event.target.value,
+                    }))
+                  }
+                  placeholder="Nuevo autor"
+                  value={authorForm.name}
+                />
+                <input
+                  onChange={(event) =>
+                    setAuthorForm((current) => ({
+                      ...current,
+                      biography: event.target.value,
+                    }))
+                  }
+                  placeholder="Biografia breve"
+                  value={authorForm.biography}
+                />
+                <button disabled={!authorForm.name.trim()} onClick={createAuthor} type="button">
+                  Agregar autor
+                </button>
+              </div>
               <select name="categoryId" onChange={updateForm} required value={form.categoryId}>
                 <option value="">Selecciona una categoria</option>
                 {categories.map((category) => (
@@ -222,6 +285,34 @@ function App() {
                   </option>
                 ))}
               </select>
+              {categories.length === 0 && (
+                <p className="field-note">No hay categorias registradas. Crea una aqui mismo.</p>
+              )}
+              <div className="inline-create">
+                <input
+                  onChange={(event) =>
+                    setCategoryForm((current) => ({
+                      ...current,
+                      name: event.target.value,
+                    }))
+                  }
+                  placeholder="Nueva categoria"
+                  value={categoryForm.name}
+                />
+                <input
+                  onChange={(event) =>
+                    setCategoryForm((current) => ({
+                      ...current,
+                      description: event.target.value,
+                    }))
+                  }
+                  placeholder="Descripcion"
+                  value={categoryForm.description}
+                />
+                <button disabled={!categoryForm.name.trim()} onClick={createCategory} type="button">
+                  Agregar categoria
+                </button>
+              </div>
               <label className="check-row">
                 <input checked={form.available} name="available" onChange={updateForm} type="checkbox" />
                 Disponible

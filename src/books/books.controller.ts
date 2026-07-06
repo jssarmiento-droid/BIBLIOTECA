@@ -15,9 +15,19 @@ export class BooksController {
     return this.booksService.findAuthors();
   }
 
+  @Post('/authors')
+  createAuthor(@Body() body: Record<string, unknown>) {
+    return this.booksService.createAuthor(body);
+  }
+
   @Get('/categories/list')
   findCategories() {
     return this.booksService.findCategories();
+  }
+
+  @Post('/categories')
+  createCategory(@Body() body: Record<string, unknown>) {
+    return this.booksService.createCategory(body);
   }
 
   @Get(':id')
