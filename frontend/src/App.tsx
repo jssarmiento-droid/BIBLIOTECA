@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { createRoot } from 'react-dom/client';
-import api from './api';
+import api from './api/axios';
 import './styles.css';
 
 const emptyBook = {
@@ -413,4 +412,4 @@ function Table({ columns, rows, title }) {
   );
 }
 
-createRoot(document.getElementById('root')).render(<App />);
+export default App;
