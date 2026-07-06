@@ -2,20 +2,53 @@ import React, { useEffect, useMemo, useState } from 'react';
 import api from './api/axios';
 import './styles.css';
 
-const emptyBook = {
-  title: '',
-  isbn: '',
-  description: '',
-  stock: 1,
-  available: true,
-  authorId: '',
-  categoryId: '',
+const emptyBook = { title: '', isbn: '', description: '', stock: 1, available: true, authorId: '', categoryId: '' };
+const defaultLoginForm = { name: '', email: '', role: 'INVITADO' };
+const sessionKey = 'biblioteca_user';
+
+const roleOptions = [
+  { value: 'ADMIN', label: 'Administrador' },
+  { value: 'BIBLIOTECARIO', label: 'Bibliotecario' },
+  { value: 'USUARIO', label: 'Usuario' },
+  { value: 'INVITADO', label: 'Invitado' },
+];
+
+const navItems = [
+  { key: 'inicio', label: 'Inicio', roles: ['ADMIN', 'BIBLIOTECARIO', 'USUARIO', 'INVITADO'] },
+  { key: 'catalogo', label: 'Catálogo', roles: ['ADMIN', 'BIBLIOTECARIO', 'USUARIO', 'INVITADO'] },
+  { key: 'nuevo', label: 'Agregar libro', roles: ['ADMIN', 'BIBLIOTECARIO'] },
+  { key: 'usuarios', label: 'Usuarios', roles: ['ADMIN'] },
+  { key: 'prestamos', label: 'Préstamos', roles: ['ADMIN', 'BIBLIOTECARIO', 'USUARIO'] },
+  { key: 'roles', label: 'Roles y permisos', roles: ['ADMIN'] },
+];
+
+const roleProfiles = {
+  ADMIN: { icon: 'A', label: 'Administrador', description: 'Tiene acceso completo a la administración del sistema.', permissions: ['Gestionar libros', 'Gestionar usuarios', 'Administrar préstamos', 'Configurar roles y permisos'], limitations: ['Debe respetar la integridad de los registros relacionados.'], hero: { eyebrow: 'Biblioteca Digital', title: 'Panel de administración de la biblioteca', description: 'Supervisa el catálogo, administra usuarios y consulta la actividad de préstamos desde un espacio centralizado.', actions: [{ label: 'Explorar catálogo', view: 'catalogo' }, { label: 'Gestionar préstamos', view: 'prestamos' }] } },
+  BIBLIOTECARIO: { icon: 'B', label: 'Bibliotecario', description: 'Gestiona las operaciones diarias de la biblioteca.', permissions: ['Registrar libros', 'Actualizar catálogo', 'Gestionar préstamos', 'Registrar devoluciones'], limitations: ['No puede administrar roles y permisos.', 'No puede gestionar cuentas de administradores.'], hero: { eyebrow: 'Gestión Bibliotecaria', title: 'Gestión diaria de la biblioteca', description: 'Administra el catálogo, registra préstamos y mantén actualizada la disponibilidad de los libros.', actions: [{ label: 'Ver catálogo', view: 'catalogo' }, { label: 'Gestionar préstamos', view: 'prestamos' }] } },
+  USUARIO: { icon: 'U', label: 'Usuario', description: 'Consulta el catálogo y gestiona sus solicitudes personales.', permissions: ['Consultar catálogo', 'Solicitar préstamos', 'Ver sus propios préstamos'], limitations: ['No puede agregar, editar ni eliminar libros.', 'No puede consultar préstamos privados de otros usuarios.', 'No puede administrar usuarios.'], hero: { eyebrow: 'Biblioteca Digital', title: 'Encuentra tu próxima lectura', description: 'Explora el catálogo, consulta la disponibilidad de libros y revisa el estado de tus préstamos.', actions: [{ label: 'Explorar catálogo', view: 'catalogo' }, { label: 'Mis préstamos', view: 'prestamos' }] } },
+  INVITADO: { icon: 'I', label: 'Invitado', description: 'Accede a la información pública disponible en la biblioteca.', permissions: ['Explorar catálogo', 'Buscar libros', 'Ver detalles de libros'], limitations: ['No puede solicitar préstamos.', 'No puede modificar información.', 'No puede acceder al panel administrativo.'], hero: { eyebrow: 'Biblioteca Digital', title: 'Explora nuestra colección', description: 'Descubre los libros disponibles y consulta información detallada del catálogo de la biblioteca.', actions: [{ label: 'Explorar catálogo', view: 'catalogo' }] } },
 };
 
-const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const permissionLabels = { 'books.manage': 'Gestionar libros', 'users.manage': 'Gestionar usuarios', 'loans.manage': 'Gestionar préstamos', 'books.read': 'Consultar catálogo', 'loans.create': 'Solicitar préstamo', 'loans.read': 'Consultar préstamos', 'authors.read': 'Consultar autores', 'categories.read': 'Consultar categorías' };
+const permissionGroups = { Catálogo: ['books.read', 'books.manage', 'authors.read', 'categories.read'], Usuarios: ['users.manage'], Préstamos: ['loans.create', 'loans.read', 'loans.manage'] };
+
+function getStoredUser() {
+  try { const savedUser = localStorage.getItem(sessionKey); return savedUser ? JSON.parse(savedUser) : null; } catch { localStorage.removeItem(sessionKey); return null; }
+}
+function normalizeRole(role) { const value = String(role || '').toUpperCase(); if (value.includes('ADMIN')) return 'ADMIN'; if (value.includes('BIBLIOTECARIO') || value.includes('LIBRARIAN')) return 'BIBLIOTECARIO'; if (value.includes('USUARIO') || value.includes('USER') || value.includes('CLIENTE')) return 'USUARIO'; return 'INVITADO'; }
+function roleLabel(role) { return roleProfiles[normalizeRole(role)].label; }
+function cleanText(value, fallback = '') { const text = String(value || fallback || '').trim(); const replacements = { 'Sistema Academico': 'Sistema Académico', Catalogo: 'Catálogo', Prestamos: 'Préstamos', Informacion: 'Información', Gestion: 'Gestión', Tecnologia: 'Tecnología', Categoria: 'Categoría', Categorias: 'Categorías', Descripcion: 'Descripción', Biografia: 'Biografía', 'Cien anos de soledad': 'Cien años de soledad', 'Introduccion a la programacion': 'Introducción a la programación', Clasico: 'Clásico', Fundacion: 'Fundación', 'ciencia ficcion': 'ciencia ficción', 'informacion publica': 'información pública' }; return Object.entries(replacements).reduce((current, [from, to]) => current.replaceAll(from, to), text); }
+function permissionLabel(name) { return permissionLabels[name] || cleanText(String(name || '').replaceAll('.', ' ')); }
+function isLoanActive(loan) { const status = String(loan?.status || '').toUpperCase(); return !['RETURNED', 'DEVUELTO', 'CANCELLED', 'CANCELADO'].includes(status); }
+function loanStatusLabel(status) { const value = String(status || '').toUpperCase(); if (value === 'RETURNED' || value === 'DEVUELTO') return 'Devuelto'; if (value === 'OVERDUE' || value === 'VENCIDO') return 'Vencido'; if (value === 'PENDING' || value === 'PENDIENTE') return 'Pendiente'; if (value === 'CANCELLED' || value === 'CANCELADO') return 'Cancelado'; return 'Activo'; }
+function getBookStock(book) { return Number(book?.stock || 0); }
+function isBookAvailable(book) { return book?.available !== false && getBookStock(book) > 0; }
+function getBookCover(book) { return book?.coverUrl || book?.cover || book?.imageUrl || book?.image || ''; }
 
 function App() {
   const [activeView, setActiveView] = useState('inicio');
+  const [currentUser, setCurrentUser] = useState(getStoredUser);
+  const [loginForm, setLoginForm] = useState(defaultLoginForm);
   const [books, setBooks] = useState([]);
   const [users, setUsers] = useState([]);
   const [loans, setLoans] = useState([]);
@@ -27,389 +60,64 @@ function App() {
   const [authorForm, setAuthorForm] = useState({ name: '', biography: '' });
   const [categoryForm, setCategoryForm] = useState({ name: '', description: '' });
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('info');
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [availabilityFilter, setAvailabilityFilter] = useState('all');
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [editingBookId, setEditingBookId] = useState(null);
 
-  const stats = useMemo(
-    () => [
-      { label: 'Libros', value: books.length },
-      { label: 'Usuarios', value: users.length },
-      { label: 'Prestamos', value: loans.length },
-      { label: 'Roles', value: roles.length },
-    ],
-    [books.length, loans.length, roles.length, users.length],
-  );
+  const currentRole = normalizeRole(currentUser?.role);
+  const currentRoleProfile = roleProfiles[currentRole];
+  const visibleNavItems = useMemo(() => navItems.filter((item) => item.roles.includes(currentRole)), [currentRole]);
+  const canManageCatalog = ['ADMIN', 'BIBLIOTECARIO'].includes(currentRole);
+  const canViewLoans = ['ADMIN', 'BIBLIOTECARIO', 'USUARIO'].includes(currentRole);
+  const canViewAdminData = currentRole === 'ADMIN';
 
-  async function loadData() {
-    setLoading(true);
-    setMessage('');
+  const visibleLoans = useMemo(() => currentRole !== 'USUARIO' ? loans : loans.filter((loan) => (currentUser?.id && loan.userId === currentUser.id) || (currentUser?.email && loan.user?.email === currentUser.email)), [currentRole, currentUser, loans]);
+  const availableBooks = useMemo(() => books.filter((book) => isBookAvailable(book)).length, [books]);
+  const activeLoans = useMemo(() => visibleLoans.filter((loan) => isLoanActive(loan)).length, [visibleLoans]);
+  const pendingReturns = useMemo(() => loans.filter((loan) => isLoanActive(loan)).length, [loans]);
 
-    const requests = [
-      ['books', api.get('/books'), setBooks],
-      ['users', api.get('/users'), setUsers],
-      ['loans', api.get('/loans'), setLoans],
-      ['roles', api.get('/roles'), setRoles],
-      ['permissions', api.get('/permissions'), setPermissions],
-      ['authors', api.get('/books/authors/list'), setAuthors],
-      ['categories', api.get('/books/categories/list'), setCategories],
-    ];
+  const stats = useMemo(() => ({ ADMIN: [{ icon: 'L', label: 'Libros disponibles', value: availableBooks, hint: 'Ejemplares listos para consulta' }, { icon: 'P', label: 'Préstamos activos', value: activeLoans, hint: 'Movimientos en curso' }, { icon: 'U', label: 'Usuarios registrados', value: users.length, hint: 'Lectores en el sistema' }, { icon: 'C', label: 'Categorías', value: categories.length, hint: 'Áreas de la colección' }], BIBLIOTECARIO: [{ icon: 'L', label: 'Total de libros', value: books.length, hint: 'Títulos catalogados' }, { icon: 'P', label: 'Préstamos activos', value: activeLoans, hint: 'Registros en seguimiento' }, { icon: 'D', label: 'Libros disponibles', value: availableBooks, hint: 'Ejemplares para préstamo' }, { icon: 'R', label: 'Devoluciones pendientes', value: pendingReturns, hint: 'Préstamos por cerrar' }], USUARIO: [{ icon: 'L', label: 'Libros disponibles', value: availableBooks, hint: 'Opciones para solicitar' }, { icon: 'M', label: 'Mis préstamos', value: visibleLoans.length, hint: 'Historial personal' }, { icon: 'A', label: 'Préstamos activos', value: activeLoans, hint: 'Solicitudes vigentes' }], INVITADO: [{ icon: 'L', label: 'Libros disponibles', value: availableBooks, hint: 'Colección abierta' }, { icon: 'C', label: 'Categorías', value: categories.length, hint: 'Temas disponibles' }, { icon: 'A', label: 'Autores', value: authors.length, hint: 'Voces de la colección' }] })[currentRole], [activeLoans, authors.length, availableBooks, books.length, categories.length, currentRole, pendingReturns, users.length, visibleLoans.length]);
 
-    const results = await Promise.allSettled(
-      requests.map(([, request]) => request),
-    );
+  const categoryOptions = useMemo(() => Array.from(new Set([...categories.map((category) => cleanText(category.name)), ...books.map((book) => cleanText(book.category?.name))].filter(Boolean))).sort((a, b) => a.localeCompare(b)), [books, categories]);
+  const filteredBooks = useMemo(() => { const query = searchTerm.trim().toLowerCase(); return books.filter((book) => { const title = cleanText(book.title).toLowerCase(); const author = cleanText(book.author?.name).toLowerCase(); const isbn = cleanText(book.isbn).toLowerCase(); const category = cleanText(book.category?.name).toLowerCase(); const matchesSearch = !query || [title, author, isbn].some((value) => value.includes(query)); const matchesCategory = categoryFilter === 'all' || category === categoryFilter.toLowerCase(); const matchesAvailability = availabilityFilter === 'all' || (availabilityFilter === 'available' && isBookAvailable(book)) || (availabilityFilter === 'unavailable' && !isBookAvailable(book)); return matchesSearch && matchesCategory && matchesAvailability; }); }, [availabilityFilter, books, categoryFilter, searchTerm]);
 
-    const failed = [];
+  function showMessage(text, type = 'info') { setMessage(text); setMessageType(type); }
+  async function loadData() { if (!currentUser) return; setLoading(true); setMessage(''); const requests = [['books', api.get('/books'), setBooks], ['authors', api.get('/books/authors/list'), setAuthors], ['categories', api.get('/books/categories/list'), setCategories]]; if (canViewLoans) requests.push(['loans', api.get('/loans'), setLoans]); else setLoans([]); if (canViewAdminData) requests.push(['users', api.get('/users'), setUsers], ['roles', api.get('/roles'), setRoles], ['permissions', api.get('/permissions'), setPermissions]); else { setUsers([]); setRoles([]); setPermissions([]); } const results = await Promise.allSettled(requests.map(([, request]) => request)); const failed = []; results.forEach((result, index) => { const [name, , setter] = requests[index]; if (result.status === 'fulfilled') setter(Array.isArray(result.value.data) ? result.value.data : []); else { failed.push(name); console.error('No se pudo cargar ' + name, result.reason); } }); if (failed.length > 0) showMessage('Algunos datos no pudieron cargarse. Inténtalo nuevamente.', 'error'); setLoading(false); }
 
-    results.forEach((result, index) => {
-      const [name, , setter] = requests[index];
+  useEffect(() => { if (!currentUser) return; if (!visibleNavItems.some((item) => item.key === activeView)) setActiveView('inicio'); }, [activeView, currentUser, visibleNavItems]);
+  useEffect(() => { loadData(); }, [currentUser?.role]);
 
-      if (result.status === 'fulfilled') {
-        setter(Array.isArray(result.value.data) ? result.value.data : []);
-      } else {
-        failed.push(name);
-      }
-    });
+  function updateForm(event) { const { name, value, type, checked } = event.target; setForm((current) => ({ ...current, [name]: type === 'checkbox' ? checked : value })); }
+  function updateLoginForm(event) { const { name, value } = event.target; setLoginForm((current) => ({ ...current, [name]: value })); }
+  function login(event) { event.preventDefault(); const user = { name: loginForm.name.trim(), email: loginForm.email.trim(), role: normalizeRole(loginForm.role) }; localStorage.setItem(sessionKey, JSON.stringify(user)); setCurrentUser(user); setActiveView('inicio'); showMessage('Sesión iniciada correctamente.'); }
+  function logout() { localStorage.removeItem(sessionKey); setCurrentUser(null); setLoginForm(defaultLoginForm); setBooks([]); setUsers([]); setLoans([]); setRoles([]); setPermissions([]); setAuthors([]); setCategories([]); setSelectedBook(null); setEditingBookId(null); setActiveView('inicio'); setMessage(''); }
+  function startEditBook(book) { setEditingBookId(book.id); setForm({ title: book.title || '', isbn: book.isbn || '', description: book.description || '', stock: getBookStock(book), available: book.available !== false, authorId: String(book.authorId || book.author?.id || ''), categoryId: String(book.categoryId || book.category?.id || '') }); setSelectedBook(null); setActiveView('nuevo'); }
+  function cancelEdit() { setEditingBookId(null); setForm(emptyBook); }
+  async function saveBook(event) { event.preventDefault(); setMessage(''); if (!canManageCatalog) { showMessage('Tu rol no permite agregar ni editar libros.', 'error'); return; } try { const payload = { ...form, stock: Number(form.stock), authorId: Number(form.authorId), categoryId: Number(form.categoryId) }; if (editingBookId) { await api.patch('/books/' + editingBookId, payload); showMessage('Libro actualizado correctamente.'); } else { await api.post('/books', payload); showMessage('Libro agregado correctamente.'); } setForm(emptyBook); setEditingBookId(null); await loadData(); setActiveView('catalogo'); } catch (error) { console.error('No se pudo guardar el libro', error); showMessage('No se pudo guardar el libro. Verifica los datos ingresados.', 'error'); } }
+  async function createAuthor(event) { event.preventDefault(); setMessage(''); if (!canManageCatalog) { showMessage('Tu rol no permite agregar autores.', 'error'); return; } try { const response = await api.post('/books/authors', authorForm); setAuthors((current) => [...current, response.data]); setForm((current) => ({ ...current, authorId: String(response.data.id) })); setAuthorForm({ name: '', biography: '' }); showMessage('Autor agregado correctamente.'); } catch (error) { console.error('No se pudo agregar el autor', error); showMessage('No se pudo agregar el autor.', 'error'); } }
+  async function createCategory(event) { event.preventDefault(); setMessage(''); if (!canManageCatalog) { showMessage('Tu rol no permite agregar categorías.', 'error'); return; } try { const response = await api.post('/books/categories', categoryForm); setCategories((current) => [...current.filter((item) => item.id !== response.data.id), response.data]); setForm((current) => ({ ...current, categoryId: String(response.data.id) })); setCategoryForm({ name: '', description: '' }); showMessage('Categoría agregada correctamente.'); } catch (error) { console.error('No se pudo agregar la categoría', error); showMessage('No se pudo agregar la categoría.', 'error'); } }
+  async function deleteBook(book) { if (currentRole !== 'ADMIN') return; if (!window.confirm('¿Eliminar "' + cleanText(book.title) + '" del catálogo?')) return; try { await api.delete('/books/' + book.id); setSelectedBook(null); showMessage('Libro eliminado correctamente.'); await loadData(); } catch (error) { console.error('No se pudo eliminar el libro', error); showMessage('No se pudo eliminar el libro.', 'error'); } }
+  async function updateAvailability(book, available) { if (!canManageCatalog) return; try { await api.patch('/books/' + book.id, { available, stock: available ? Math.max(getBookStock(book), 1) : 0 }); setSelectedBook(null); showMessage('Disponibilidad actualizada correctamente.'); await loadData(); } catch (error) { console.error('No se pudo actualizar la disponibilidad', error); showMessage('No se pudo actualizar la disponibilidad.', 'error'); } }
+  async function requestLoan(book) { if (currentRole !== 'USUARIO' || !isBookAvailable(book)) return; try { let userId = currentUser?.id; if (!userId && currentUser?.email) { const response = await api.get('/users'); const matchedUser = Array.isArray(response.data) ? response.data.find((user) => String(user.email).toLowerCase() === String(currentUser.email).toLowerCase()) : null; userId = matchedUser?.id; if (matchedUser) { const updatedUser = { ...currentUser, id: matchedUser.id, name: currentUser.name || matchedUser.name }; localStorage.setItem(sessionKey, JSON.stringify(updatedUser)); setCurrentUser(updatedUser); } } if (!userId) { showMessage('No encontramos una cuenta registrada con ese correo para solicitar el préstamo.', 'error'); return; } await api.post('/loans', { userId: Number(userId), bookId: Number(book.id), status: 'ACTIVE' }); setSelectedBook(null); showMessage('Solicitud de préstamo registrada correctamente.'); await loadData(); } catch (error) { console.error('No se pudo solicitar el préstamo', error); showMessage('No se pudo registrar la solicitud de préstamo.', 'error'); } }
 
-    if (failed.length > 0) {
-      setMessage(
-        `No se pudieron cargar: ${failed.join(', ')}. API: ${apiBaseUrl}`,
-      );
-    }
+  const displayName = currentUser?.name || currentUser?.email || 'Invitado';
+  const displayEmail = currentUser?.email || 'Sin correo registrado';
+  if (!currentUser) return <main className="login-page"><section className="login-panel"><p className="eyebrow">Sistema Académico</p><h1>Biblioteca Digital</h1><form className="session-form" onSubmit={login}><input name="name" onChange={updateLoginForm} placeholder="Nombre" value={loginForm.name} /><input name="email" onChange={updateLoginForm} placeholder="Correo" type="email" value={loginForm.email} /><select name="role" onChange={updateLoginForm} value={loginForm.role}>{roleOptions.map((role) => <option key={role.value} value={role.value}>{role.label}</option>)}</select><button type="submit">Iniciar sesión</button></form></section></main>;
 
-    setLoading(false);
-  }
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  function updateForm(event) {
-    const { name, value, type, checked } = event.target;
-    setForm((current) => ({
-      ...current,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-  }
-
-  async function createBook(event) {
-    event.preventDefault();
-    setMessage('');
-
-    try {
-      await api.post('/books', {
-        ...form,
-        stock: Number(form.stock),
-        authorId: Number(form.authorId),
-        categoryId: Number(form.categoryId),
-      });
-      setForm(emptyBook);
-      setMessage('Libro agregado correctamente.');
-      await loadData();
-      setActiveView('catalogo');
-    } catch (error) {
-      setMessage('No se pudo agregar el libro. Verifica autorId y categoryId.');
-    }
-  }
-
-  async function createAuthor(event) {
-    event.preventDefault();
-    setMessage('');
-
-    try {
-      const response = await api.post('/books/authors', authorForm);
-      setAuthors((current) => [...current, response.data]);
-      setForm((current) => ({ ...current, authorId: String(response.data.id) }));
-      setAuthorForm({ name: '', biography: '' });
-      setMessage('Autor agregado correctamente.');
-    } catch (error) {
-      setMessage('No se pudo agregar el autor.');
-    }
-  }
-
-  async function createCategory(event) {
-    event.preventDefault();
-    setMessage('');
-
-    try {
-      const response = await api.post('/books/categories', categoryForm);
-      setCategories((current) => {
-        const withoutDuplicate = current.filter((item) => item.id !== response.data.id);
-        return [...withoutDuplicate, response.data];
-      });
-      setForm((current) => ({ ...current, categoryId: String(response.data.id) }));
-      setCategoryForm({ name: '', description: '' });
-      setMessage('Categoria agregada correctamente.');
-    } catch (error) {
-      setMessage('No se pudo agregar la categoria.');
-    }
-  }
-
-  const navItems = [
-    ['inicio', 'Inicio'],
-    ['catalogo', 'Catalogo'],
-    ['nuevo', 'Agregar libro'],
-    ['usuarios', 'Usuarios'],
-    ['prestamos', 'Prestamos'],
-    ['roles', 'Roles y permisos'],
-  ];
-
-  return (
-    <main className="app-shell">
-      <aside className="sidebar">
-        <div>
-          <p className="eyebrow">Sistema academico</p>
-          <h1>Biblioteca Digital</h1>
-        </div>
-
-        <nav>
-          {navItems.map(([key, label]) => (
-            <button
-              className={activeView === key ? 'active' : ''}
-              key={key}
-              onClick={() => setActiveView(key)}
-              type="button"
-            >
-              {label}
-            </button>
-          ))}
-        </nav>
-
-        <button className="refresh" onClick={loadData} type="button">
-          Actualizar datos
-        </button>
-      </aside>
-
-      <section className="content">
-        {message && <div className="notice">{message}</div>}
-        {loading && <div className="notice muted">Cargando informacion...</div>}
-
-        {activeView === 'inicio' && (
-          <section className="hero">
-            <div>
-              <p className="eyebrow">Gestion bibliotecaria</p>
-              <h2>Catalogo, usuarios, prestamos y permisos en un solo panel.</h2>
-              <p>
-                Una interfaz sobria para administrar una biblioteca digital con
-                backend NestJS, Prisma y PostgreSQL.
-              </p>
-            </div>
-            <div className="stats-grid">
-              {stats.map((item) => (
-                <article className="stat-card" key={item.label}>
-                  <span>{item.label}</span>
-                  <strong>{item.value}</strong>
-                </article>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {activeView === 'catalogo' && (
-          <section>
-            <Header title="Catalogo de libros" count={books.length} />
-            <div className="book-grid">
-              {books.map((book) => (
-                <article className="book-card" key={book.id}>
-                  <span>{book.category?.name || 'Sin categoria'}</span>
-                  <h3>{book.title}</h3>
-                  <p>{book.description || 'Sin descripcion registrada.'}</p>
-                  <dl>
-                    <div>
-                      <dt>Autor</dt>
-                      <dd>{book.author?.name || 'No asignado'}</dd>
-                    </div>
-                    <div>
-                      <dt>ISBN</dt>
-                      <dd>{book.isbn}</dd>
-                    </div>
-                    <div>
-                      <dt>Stock</dt>
-                      <dd>{book.stock}</dd>
-                    </div>
-                  </dl>
-                </article>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {activeView === 'nuevo' && (
-          <section>
-            <Header title="Agregar libro" />
-            <form className="form-panel" onSubmit={createBook}>
-              <input name="title" onChange={updateForm} placeholder="Titulo" required value={form.title} />
-              <input name="isbn" onChange={updateForm} placeholder="ISBN" required value={form.isbn} />
-              <textarea name="description" onChange={updateForm} placeholder="Descripcion" value={form.description} />
-              <input min="0" name="stock" onChange={updateForm} placeholder="Stock" type="number" value={form.stock} />
-              <select name="authorId" onChange={updateForm} required value={form.authorId}>
-                <option value="">Selecciona un autor</option>
-                {authors.map((author) => (
-                  <option key={author.id} value={author.id}>
-                    {author.name}
-                  </option>
-                ))}
-              </select>
-              {authors.length === 0 && (
-                <p className="field-note">No hay autores registrados. Crea uno aqui mismo.</p>
-              )}
-              <div className="inline-create">
-                <input
-                  onChange={(event) =>
-                    setAuthorForm((current) => ({
-                      ...current,
-                      name: event.target.value,
-                    }))
-                  }
-                  placeholder="Nuevo autor"
-                  value={authorForm.name}
-                />
-                <input
-                  onChange={(event) =>
-                    setAuthorForm((current) => ({
-                      ...current,
-                      biography: event.target.value,
-                    }))
-                  }
-                  placeholder="Biografia breve"
-                  value={authorForm.biography}
-                />
-                <button disabled={!authorForm.name.trim()} onClick={createAuthor} type="button">
-                  Agregar autor
-                </button>
-              </div>
-              <select name="categoryId" onChange={updateForm} required value={form.categoryId}>
-                <option value="">Selecciona una categoria</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-              {categories.length === 0 && (
-                <p className="field-note">No hay categorias registradas. Crea una aqui mismo.</p>
-              )}
-              <div className="inline-create">
-                <input
-                  onChange={(event) =>
-                    setCategoryForm((current) => ({
-                      ...current,
-                      name: event.target.value,
-                    }))
-                  }
-                  placeholder="Nueva categoria"
-                  value={categoryForm.name}
-                />
-                <input
-                  onChange={(event) =>
-                    setCategoryForm((current) => ({
-                      ...current,
-                      description: event.target.value,
-                    }))
-                  }
-                  placeholder="Descripcion"
-                  value={categoryForm.description}
-                />
-                <button disabled={!categoryForm.name.trim()} onClick={createCategory} type="button">
-                  Agregar categoria
-                </button>
-              </div>
-              <label className="check-row">
-                <input checked={form.available} name="available" onChange={updateForm} type="checkbox" />
-                Disponible
-              </label>
-              <button type="submit">Guardar libro</button>
-            </form>
-          </section>
-        )}
-
-        {activeView === 'usuarios' && (
-          <Table
-            columns={['Nombre', 'Email', 'Rol']}
-            rows={users.map((user) => [
-              user.name,
-              user.email,
-              user.role?.name || 'Sin rol',
-            ])}
-            title="Usuarios"
-          />
-        )}
-
-        {activeView === 'prestamos' && (
-          <Table
-            columns={['Usuario', 'Libro', 'Estado', 'Fecha']}
-            rows={loans.map((loan) => [
-              loan.user?.name || `Usuario ${loan.userId}`,
-              loan.book?.title || `Libro ${loan.bookId}`,
-              loan.status,
-              new Date(loan.loanDate).toLocaleDateString(),
-            ])}
-            title="Prestamos"
-          />
-        )}
-
-        {activeView === 'roles' && (
-          <section>
-            <Header title="Roles y permisos" count={roles.length} />
-            <div className="roles-layout">
-              {roles.map((role) => (
-                <article className="role-card" key={role.id}>
-                  <h3>{role.name}</h3>
-                  <p>{role.description || 'Sin descripcion.'}</p>
-                  <div className="chips">
-                    {(role.permissions || []).map((item) => (
-                      <span key={item.id}>{item.permission?.name}</span>
-                    ))}
-                  </div>
-                </article>
-              ))}
-            </div>
-            <Header title="Permisos registrados" count={permissions.length} />
-            <div className="chips wide">
-              {permissions.map((permission) => (
-                <span key={permission.id}>{permission.name}</span>
-              ))}
-            </div>
-          </section>
-        )}
-      </section>
-    </main>
-  );
+  return <main className="app-shell"><aside className="sidebar"><div><p className="eyebrow">Biblioteca Digital</p><h1>Biblioteca Digital</h1></div><div className="session-card"><div className="avatar">{roleProfiles[currentRole].icon}</div><span>{displayName}</span><small>{displayEmail}</small><strong>{roleLabel(currentRole)}</strong><button className="logout" onClick={logout} type="button">Cerrar sesión</button></div><nav>{visibleNavItems.map((item) => <button className={activeView === item.key ? 'active' : ''} key={item.key} onClick={() => setActiveView(item.key)} type="button">{item.key === 'prestamos' && currentRole === 'USUARIO' ? 'Mis préstamos' : item.label}</button>)}</nav><button className="refresh" onClick={loadData} type="button">Actualizar datos</button></aside><section className="content">{message && <div className={'notice ' + (messageType === 'error' ? 'error' : '')}><span>{message}</span>{messageType === 'error' && <button onClick={loadData} type="button">Reintentar</button>}</div>}{loading && <div className="notice muted">Cargando información...</div>}{activeView === 'inicio' && <section className="hero"><div className="hero-copy"><p className="eyebrow">{currentRoleProfile.hero.eyebrow}</p><h2>{currentRoleProfile.hero.title}</h2><p>{currentRoleProfile.hero.description}</p><div className="hero-actions">{currentRoleProfile.hero.actions.filter((action) => visibleNavItems.some((item) => item.key === action.view)).map((action) => <button key={action.view} onClick={() => setActiveView(action.view)} type="button">{action.label}</button>)}</div></div><div className="stats-grid">{stats.map((item) => <article className="stat-card" key={item.label}><div className="stat-icon">{item.icon}</div><span>{item.label}</span><strong>{item.value}</strong><small>{item.hint}</small></article>)}</div></section>}{activeView === 'catalogo' && <CatalogPage filteredBooks={filteredBooks} searchTerm={searchTerm} setSearchTerm={setSearchTerm} categoryFilter={categoryFilter} setCategoryFilter={setCategoryFilter} availabilityFilter={availabilityFilter} setAvailabilityFilter={setAvailabilityFilter} categoryOptions={categoryOptions} canManageCatalog={canManageCatalog} currentRole={currentRole} deleteBook={deleteBook} startEditBook={startEditBook} requestLoan={requestLoan} setSelectedBook={setSelectedBook} updateAvailability={updateAvailability} />}{activeView === 'nuevo' && canManageCatalog && <BookForm editingBookId={editingBookId} form={form} updateForm={updateForm} saveBook={saveBook} authors={authors} categories={categories} authorForm={authorForm} setAuthorForm={setAuthorForm} categoryForm={categoryForm} setCategoryForm={setCategoryForm} createAuthor={createAuthor} createCategory={createCategory} cancelEdit={cancelEdit} />}{activeView === 'usuarios' && canViewAdminData && <Table columns={['Nombre', 'Correo', 'Rol']} rows={users.map((user) => [cleanText(user.name, 'Sin nombre'), user.email, roleLabel(user.role?.name)])} title="Usuarios" />}{activeView === 'prestamos' && canViewLoans && <Table columns={['Usuario', 'Libro', 'Estado', 'Fecha']} rows={visibleLoans.map((loan) => [cleanText(loan.user?.name || 'Usuario ' + loan.userId), cleanText(loan.book?.title || 'Libro ' + loan.bookId), loanStatusLabel(loan.status), new Date(loan.loanDate).toLocaleDateString()])} title={currentRole === 'USUARIO' ? 'Mis préstamos' : 'Préstamos'} />}{activeView === 'roles' && canViewAdminData && <RolesPage permissions={permissions} />}</section>{selectedBook && <BookDetailModal book={selectedBook} canManageCatalog={canManageCatalog} currentRole={currentRole} onClose={() => setSelectedBook(null)} onDelete={deleteBook} onEdit={startEditBook} onRequestLoan={requestLoan} onUpdateAvailability={updateAvailability} />}</main>;
 }
 
-function Header({ title, count }) {
-  return (
-    <header className="section-header">
-      <h2>{title}</h2>
-      {count !== undefined && <span>{count} registros</span>}
-    </header>
-  );
-}
-
-function Table({ columns, rows, title }) {
-  return (
-    <section>
-      <Header title={title} count={rows.length} />
-      <div className="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              {columns.map((column) => (
-                <th key={column}>{column}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, index) => (
-              <tr key={index}>
-                {row.map((cell, cellIndex) => (
-                  <td key={cellIndex}>{cell}</td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  );
-}
+function CatalogPage({ filteredBooks, searchTerm, setSearchTerm, categoryFilter, setCategoryFilter, availabilityFilter, setAvailabilityFilter, categoryOptions, canManageCatalog, currentRole, deleteBook, startEditBook, requestLoan, setSelectedBook, updateAvailability }) { return <section className="catalog-page"><div className="page-intro"><div><h2>Catálogo de libros</h2><p>Explora la colección disponible y encuentra tu próxima lectura.</p></div><strong>{filteredBooks.length} {filteredBooks.length === 1 ? 'libro encontrado' : 'libros encontrados'}</strong></div><div className="catalog-tools"><input onChange={(event) => setSearchTerm(event.target.value)} placeholder="Buscar por título, autor o ISBN..." value={searchTerm} /><select onChange={(event) => setCategoryFilter(event.target.value)} value={categoryFilter}><option value="all">Todas las categorías</option>{categoryOptions.map((category) => <option key={category} value={category}>{category}</option>)}</select><select onChange={(event) => setAvailabilityFilter(event.target.value)} value={availabilityFilter}><option value="all">Todos</option><option value="available">Disponibles</option><option value="unavailable">No disponibles</option></select></div><div className="book-grid">{filteredBooks.map((book) => <BookCard book={book} canManageCatalog={canManageCatalog} currentRole={currentRole} key={book.id} onDelete={deleteBook} onEdit={startEditBook} onRequestLoan={requestLoan} onSelect={setSelectedBook} onUpdateAvailability={updateAvailability} />)}</div>{filteredBooks.length === 0 && <div className="empty-state">No se encontraron libros con los filtros seleccionados.</div>}</section>; }
+function BookForm({ editingBookId, form, updateForm, saveBook, authors, categories, authorForm, setAuthorForm, categoryForm, setCategoryForm, createAuthor, createCategory, cancelEdit }) { return <section><Header title={editingBookId ? 'Editar libro' : 'Agregar libro'} /><form className="form-panel" onSubmit={saveBook}><input name="title" onChange={updateForm} placeholder="Título" required value={form.title} /><input name="isbn" onChange={updateForm} placeholder="ISBN" required value={form.isbn} /><textarea name="description" onChange={updateForm} placeholder="Descripción" value={form.description} /><input min="0" name="stock" onChange={updateForm} placeholder="Stock" type="number" value={form.stock} /><select name="authorId" onChange={updateForm} required value={form.authorId}><option value="">Selecciona un autor</option>{authors.map((author) => <option key={author.id} value={author.id}>{cleanText(author.name)}</option>)}</select>{authors.length === 0 && <p className="field-note">No hay autores registrados. Crea uno aquí mismo.</p>}<div className="inline-create"><input onChange={(event) => setAuthorForm((current) => ({ ...current, name: event.target.value }))} placeholder="Nuevo autor" value={authorForm.name} /><input onChange={(event) => setAuthorForm((current) => ({ ...current, biography: event.target.value }))} placeholder="Biografía breve" value={authorForm.biography} /><button disabled={!authorForm.name.trim()} onClick={createAuthor} type="button">Agregar autor</button></div><select name="categoryId" onChange={updateForm} required value={form.categoryId}><option value="">Selecciona una categoría</option>{categories.map((category) => <option key={category.id} value={category.id}>{cleanText(category.name)}</option>)}</select>{categories.length === 0 && <p className="field-note">No hay categorías registradas. Crea una aquí mismo.</p>}<div className="inline-create"><input onChange={(event) => setCategoryForm((current) => ({ ...current, name: event.target.value }))} placeholder="Nueva categoría" value={categoryForm.name} /><input onChange={(event) => setCategoryForm((current) => ({ ...current, description: event.target.value }))} placeholder="Descripción" value={categoryForm.description} /><button disabled={!categoryForm.name.trim()} onClick={createCategory} type="button">Agregar categoría</button></div><label className="check-row"><input checked={form.available} name="available" onChange={updateForm} type="checkbox" />Disponible</label><div className="form-actions"><button type="submit">{editingBookId ? 'Guardar cambios' : 'Guardar libro'}</button>{editingBookId && <button className="secondary-button" onClick={cancelEdit} type="button">Cancelar edición</button>}</div></form></section>; }
+function BookCard({ book, canManageCatalog, currentRole, onDelete, onEdit, onRequestLoan, onSelect, onUpdateAvailability }) { const available = isBookAvailable(book); const cover = getBookCover(book); return <article className="book-card"><div className="book-cover">{cover ? <img alt={'Portada de ' + cleanText(book.title)} src={cover} /> : <span>{cleanText(book.title, 'Libro').slice(0, 1)}</span>}</div><div className="book-card-body"><span className="category-pill">{cleanText(book.category?.name, 'Sin categoría')}</span><h3>{cleanText(book.title, 'Sin título')}</h3><p className="book-author">{cleanText(book.author?.name, 'Autor no asignado')}</p><div className="availability-row"><span className={available ? 'status available' : 'status unavailable'}>{available ? 'Disponible' : 'No disponible'}</span><span>{getBookStock(book)} {getBookStock(book) === 1 ? 'ejemplar' : 'ejemplares'}</span></div><small>ISBN {cleanText(book.isbn, 'No registrado')}</small></div><div className="book-actions"><button className="secondary-button" onClick={() => onSelect(book)} type="button">Ver detalles</button>{canManageCatalog && <button className="secondary-button" onClick={() => onEdit(book)} type="button">Editar</button>}{currentRole === 'ADMIN' && <button className="danger-button" onClick={() => onDelete(book)} type="button">Eliminar</button>}{currentRole === 'BIBLIOTECARIO' && <button className="secondary-button" onClick={() => onUpdateAvailability(book, !available)} type="button">{available ? 'Marcar no disponible' : 'Marcar disponible'}</button>}{currentRole === 'USUARIO' && available && <button onClick={() => onRequestLoan(book)} type="button">Solicitar préstamo</button>}</div></article>; }
+function BookDetailModal({ book, canManageCatalog, currentRole, onClose, onDelete, onEdit, onRequestLoan, onUpdateAvailability }) { const available = isBookAvailable(book); const cover = getBookCover(book); return <div className="modal-backdrop" role="presentation"><section className="book-modal" role="dialog" aria-modal="true" aria-label="Detalle del libro"><button className="modal-close" onClick={onClose} type="button">Cerrar</button><div className="book-cover detail-cover">{cover ? <img alt={'Portada de ' + cleanText(book.title)} src={cover} /> : <span>{cleanText(book.title, 'Libro').slice(0, 1)}</span>}</div><div className="modal-content"><span className="category-pill">{cleanText(book.category?.name, 'Sin categoría')}</span><h2>{cleanText(book.title, 'Sin título')}</h2><p className="book-author">{cleanText(book.author?.name, 'Autor no asignado')}</p><p>{cleanText(book.description, 'Este libro no tiene descripción registrada.')}</p><dl className="detail-list"><div><dt>ISBN</dt><dd>{cleanText(book.isbn, 'No registrado')}</dd></div><div><dt>Stock</dt><dd>{getBookStock(book)}</dd></div><div><dt>Estado</dt><dd>{available ? 'Disponible' : 'Actualmente no disponible'}</dd></div></dl><div className="book-actions modal-actions">{currentRole === 'USUARIO' && available && <button onClick={() => onRequestLoan(book)} type="button">Solicitar préstamo</button>}{currentRole === 'USUARIO' && !available && <span className="status unavailable">Actualmente no disponible</span>}{canManageCatalog && <button className="secondary-button" onClick={() => onEdit(book)} type="button">Editar</button>}{canManageCatalog && <button className="secondary-button" onClick={() => onUpdateAvailability(book, !available)} type="button">{available ? 'Marcar no disponible' : 'Marcar disponible'}</button>}{currentRole === 'ADMIN' && <button className="danger-button" onClick={() => onDelete(book)} type="button">Eliminar</button>}</div></div></section></div>; }
+function RolesPage({ permissions }) { return <section className="roles-page"><div className="page-intro"><div><h2>Roles y permisos</h2><p>Consulta el alcance de cada perfil dentro de la biblioteca.</p></div><strong>{Object.keys(roleProfiles).length} roles configurados</strong></div><div className="roles-layout">{Object.entries(roleProfiles).map(([key, profile]) => <article className="role-card" key={key}><div className="role-card-header"><div className="role-icon">{profile.icon}</div><div><h3>{profile.label}</h3><p>{profile.description}</p></div></div><RoleList title="Permisos principales" items={profile.permissions} /><RoleList title="Limitaciones" items={profile.limitations} muted /></article>)}</div><section className="permission-panel"><Header title="Permisos registrados" /><div className="permission-groups">{Object.entries(permissionGroups).map(([group, names]) => <article key={group}><h3>{group}</h3><div className="chips">{names.filter((name) => permissions.length === 0 || permissions.some((permission) => permission.name === name)).map((name) => <span key={name}>{permissionLabel(name)}</span>)}</div></article>)}</div></section></section>; }
+function Header({ title, count }) { return <header className="section-header"><h2>{title}</h2>{count !== undefined && <span>{count} registros</span>}</header>; }
+function RoleList({ title, items, muted = false }) { return <div className={muted ? 'role-list muted-list' : 'role-list'}><h4>{title}</h4><ul>{items.map((item) => <li key={item}>{item}</li>)}</ul></div>; }
+function Table({ columns, rows, title }) { return <section><Header title={title} count={rows.length} /><div className="table-wrap"><table><thead><tr>{columns.map((column) => <th key={column}>{column}</th>)}</tr></thead><tbody>{rows.map((row, index) => <tr key={index}>{row.map((cell, cellIndex) => <td key={cellIndex}>{cell}</td>)}</tr>)}</tbody></table></div></section>; }
 
 export default App;
