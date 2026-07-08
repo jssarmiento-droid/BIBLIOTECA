@@ -1,11 +1,12 @@
-import 'dotenv/config';
+﻿import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
-  throw new Error('DATABASE_URL no esta configurada');
+  throw new Error('DATABASE_URL no está configurada');
 }
 
 const prisma = new PrismaClient({
@@ -20,30 +21,30 @@ const roles = [
   },
   {
     name: 'Bibliotecario',
-    description: 'Administra catalogo, prestamos y devoluciones.',
+    description: 'Administra catálogo, préstamos y devoluciones.',
     permissions: ['books.read', 'books.manage', 'loans.manage'],
   },
   {
     name: 'Usuario',
-    description: 'Consulta libros y gestiona sus prestamos.',
+    description: 'Consulta libros y gestiona sus préstamos.',
     permissions: ['books.read', 'loans.create', 'loans.read'],
   },
   {
     name: 'Invitado',
-    description: 'Consulta informacion publica del catalogo.',
+    description: 'Consulta información pública del catálogo.',
     permissions: ['books.read', 'authors.read', 'categories.read'],
   },
 ];
 
 const permissions = [
-  { name: 'books.read', description: 'Consultar libros del catalogo.' },
+  { name: 'books.read', description: 'Consultar libros del catálogo.' },
   { name: 'books.manage', description: 'Crear, editar y eliminar libros.' },
   { name: 'users.manage', description: 'Administrar usuarios.' },
-  { name: 'loans.manage', description: 'Administrar prestamos.' },
-  { name: 'loans.create', description: 'Solicitar prestamos.' },
-  { name: 'loans.read', description: 'Consultar prestamos propios.' },
+  { name: 'loans.manage', description: 'Administrar préstamos.' },
+  { name: 'loans.create', description: 'Solicitar préstamos.' },
+  { name: 'loans.read', description: 'Consultar préstamos propios.' },
   { name: 'authors.read', description: 'Consultar autores.' },
-  { name: 'categories.read', description: 'Consultar categorias.' },
+  { name: 'categories.read', description: 'Consultar categorías.' },
 ];
 
 async function main() {
@@ -73,25 +74,17 @@ async function main() {
       if (!permissionId) continue;
 
       await prisma.rolePermission.upsert({
-        where: {
-          roleId_permissionId: {
-            roleId: saved.id,
-            permissionId,
-          },
-        },
+        where: { roleId_permissionId: { roleId: saved.id, permissionId } },
         update: {},
-        create: {
-          roleId: saved.id,
-          permissionId,
-        },
+        create: { roleId: saved.id, permissionId },
       });
     }
   }
 
   const categories = [
-    { name: 'Literatura', description: 'Novelas, cuentos y poesia.' },
-    { name: 'Ciencia', description: 'Textos cientificos y divulgativos.' },
-    { name: 'Tecnologia', description: 'Programacion, datos e informatica.' },
+    { name: 'Literatura', description: 'Novelas, cuentos y poesía.' },
+    { name: 'Ciencia', description: 'Textos científicos y divulgativos.' },
+    { name: 'Tecnología', description: 'Programación, datos e informática.' },
     { name: 'Historia', description: 'Historia universal y regional.' },
   ];
 
@@ -104,14 +97,22 @@ async function main() {
   }
 
   const authors = [
-    { name: 'Gabriel Garcia Marquez', biography: 'Autor colombiano.' },
-    { name: 'Isaac Asimov', biography: 'Autor de ciencia ficcion y divulgacion.' },
-    { name: 'Jane Austen', biography: 'Novelista britanica.' },
+    { name: 'Gabriel García Márquez', biography: 'Autor colombiano.' },
+    { name: 'Isaac Asimov', biography: 'Autor de ciencia ficción y divulgación.' },
+    { name: 'Jane Austen', biography: 'Novelista británica.' },
     { name: 'Yuval Noah Harari', biography: 'Historiador y ensayista.' },
   ];
 
   for (const author of authors) {
-    const existing = await prisma.author.findFirst({ where: { name: author.name } });
+    const existing = await prisma.author.findFirst({
+      where: {
+        OR: [
+          { name: author.name },
+          { name: author.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '') },
+        ],
+      },
+    });
+
     if (existing) {
       await prisma.author.update({ where: { id: existing.id }, data: author });
     } else {
@@ -119,45 +120,29 @@ async function main() {
     }
   }
 
-  const literature = await prisma.category.findUniqueOrThrow({
-    where: { name: 'Literatura' },
-  });
-  const science = await prisma.category.findUniqueOrThrow({
-    where: { name: 'Ciencia' },
-  });
-  const technology = await prisma.category.findUniqueOrThrow({
-    where: { name: 'Tecnologia' },
-  });
-  const history = await prisma.category.findUniqueOrThrow({
-    where: { name: 'Historia' },
-  });
+  const literature = await prisma.category.findUniqueOrThrow({ where: { name: 'Literatura' } });
+  const science = await prisma.category.findUniqueOrThrow({ where: { name: 'Ciencia' } });
+  const technology = await prisma.category.findUniqueOrThrow({ where: { name: 'Tecnología' } });
+  const history = await prisma.category.findUniqueOrThrow({ where: { name: 'Historia' } });
 
-  const garciaMarquez = await prisma.author.findFirstOrThrow({
-    where: { name: 'Gabriel Garcia Marquez' },
-  });
-  const asimov = await prisma.author.findFirstOrThrow({
-    where: { name: 'Isaac Asimov' },
-  });
-  const austen = await prisma.author.findFirstOrThrow({
-    where: { name: 'Jane Austen' },
-  });
-  const harari = await prisma.author.findFirstOrThrow({
-    where: { name: 'Yuval Noah Harari' },
-  });
+  const garciaMarquez = await prisma.author.findFirstOrThrow({ where: { name: 'Gabriel García Márquez' } });
+  const asimov = await prisma.author.findFirstOrThrow({ where: { name: 'Isaac Asimov' } });
+  const austen = await prisma.author.findFirstOrThrow({ where: { name: 'Jane Austen' } });
+  const harari = await prisma.author.findFirstOrThrow({ where: { name: 'Yuval Noah Harari' } });
 
   const books = [
     {
-      title: 'Cien anos de soledad',
+      title: 'Cien años de soledad',
       isbn: '9780307474728',
-      description: 'Clasico de la literatura latinoamericana.',
+      description: 'Clásico de la literatura latinoamericana.',
       stock: 5,
       authorId: garciaMarquez.id,
       categoryId: literature.id,
     },
     {
-      title: 'Fundacion',
+      title: 'Fundación',
       isbn: '9780553293357',
-      description: 'Saga esencial de ciencia ficcion.',
+      description: 'Saga esencial de ciencia ficción.',
       stock: 4,
       authorId: asimov.id,
       categoryId: science.id,
@@ -165,7 +150,7 @@ async function main() {
     {
       title: 'Orgullo y prejuicio',
       isbn: '9780141439518',
-      description: 'Novela clasica inglesa.',
+      description: 'Novela clásica inglesa.',
       stock: 3,
       authorId: austen.id,
       categoryId: literature.id,
@@ -179,9 +164,9 @@ async function main() {
       categoryId: history.id,
     },
     {
-      title: 'Introduccion a la programacion',
+      title: 'Introducción a la programación',
       isbn: '9780000000002',
-      description: 'Libro base para estudiantes de tecnologia.',
+      description: 'Libro base para estudiantes de tecnología.',
       stock: 8,
       authorId: asimov.id,
       categoryId: technology.id,
@@ -197,15 +182,38 @@ async function main() {
   }
 
   const adminRoleId = roleMap.get('Administrador');
+  const librarianRoleId = roleMap.get('Bibliotecario');
+
   if (adminRoleId) {
     await prisma.user.upsert({
-      where: { email: 'admin@biblioteca.local' },
-      update: { name: 'Administrador Biblioteca', roleId: adminRoleId },
-      create: {
-        name: 'Administrador Biblioteca',
-        email: 'admin@biblioteca.local',
-        password: 'admin123',
+      where: { email: 'sebassarmiento1029@gmail.com' },
+      update: {
+        name: 'Josten Sebastián Sarmiento',
+        password: await bcrypt.hash('admin102938', 10),
         roleId: adminRoleId,
+      },
+      create: {
+        name: 'Josten Sebastián Sarmiento',
+        email: 'sebassarmiento1029@gmail.com',
+        password: await bcrypt.hash('admin102938', 10),
+        roleId: adminRoleId,
+      },
+    });
+  }
+
+  if (librarianRoleId) {
+    await prisma.user.upsert({
+      where: { email: 'jssarmiento@sudamericano.edu.ec' },
+      update: {
+        name: 'Bibliotecario/a Principal',
+        password: await bcrypt.hash('biblio102938', 10),
+        roleId: librarianRoleId,
+      },
+      create: {
+        name: 'Bibliotecario/a Principal',
+        email: 'jssarmiento@sudamericano.edu.ec',
+        password: await bcrypt.hash('biblio102938', 10),
+        roleId: librarianRoleId,
       },
     });
   }
