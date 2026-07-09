@@ -10,22 +10,40 @@ import { LoansService } from './loans.service';
 export class LoansController {
   constructor(private readonly loansService: LoansService) {}
 
-  @Roles('ADMIN', 'BIBLIOTECARIO', 'USUARIO')
+  @Roles('ADMIN', 'BIBLIOTECARIO', 'USUARIO', 'DOCENTE', 'ESTUDIANTE')
   @Get()
   findAll(@CurrentUser() user: any) {
     return this.loansService.findAllForUser(user);
   }
 
-  @Roles('ADMIN', 'BIBLIOTECARIO', 'USUARIO')
+  @Roles('ADMIN', 'BIBLIOTECARIO', 'USUARIO', 'DOCENTE', 'ESTUDIANTE')
+  @Get('reservations')
+  findReservations(@CurrentUser() user: any) {
+    return this.loansService.findReservations(user);
+  }
+
+  @Roles('ADMIN', 'BIBLIOTECARIO', 'USUARIO', 'DOCENTE', 'ESTUDIANTE')
   @Get(':id')
   findOne(@Param('id') id: string, @CurrentUser() user: any) {
     return this.loansService.findOneForUser(Number(id), user);
   }
 
-  @Roles('ADMIN', 'BIBLIOTECARIO', 'USUARIO')
+  @Roles('ADMIN', 'BIBLIOTECARIO', 'USUARIO', 'DOCENTE', 'ESTUDIANTE')
   @Post()
   create(@Body() data: Record<string, unknown>, @CurrentUser() user: any) {
     return this.loansService.createForUser(data, user);
+  }
+
+  @Roles('USUARIO', 'DOCENTE', 'ESTUDIANTE')
+  @Post('reservations')
+  reserve(@Body() data: Record<string, unknown>, @CurrentUser() user: any) {
+    return this.loansService.reserveBook(Number(data.bookId), user);
+  }
+
+  @Roles('USUARIO', 'DOCENTE', 'ESTUDIANTE')
+  @Post(':id/renewal')
+  requestRenewal(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.loansService.requestRenewal(Number(id), user);
   }
 
   @Roles('ADMIN', 'BIBLIOTECARIO')

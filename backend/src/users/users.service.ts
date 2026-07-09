@@ -77,8 +77,18 @@ export class UsersService {
       user.password = await bcrypt.hash(String(data.password ?? ''), 10);
     }
     if (!partial || data.roleId !== undefined) user.roleId = Number(data.roleId);
+    if (data.status !== undefined) user.status = this.normalizeStatus(data.status);
 
     return user;
+  }
+
+  private normalizeStatus(status: unknown) {
+    const value = String(status ?? 'ACTIVE').trim().toUpperCase();
+    if (['SUSPENDIDO', 'SUSPENDED', 'INACTIVO', 'INACTIVE'].includes(value)) {
+      return 'SUSPENDED';
+    }
+
+    return 'ACTIVE';
   }
 
   private withoutPassword(user: any) {

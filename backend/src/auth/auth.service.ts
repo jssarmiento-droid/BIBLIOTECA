@@ -46,7 +46,7 @@ export class AuthService {
     }
 
     const role = await this.prisma.role.findFirst({
-      where: { name: { in: ['Usuario', 'USUARIO', 'User', 'USER'] } },
+      where: { name: { in: ['Estudiante', 'ESTUDIANTE', 'Usuario', 'USUARIO', 'User', 'USER'] } },
     });
 
     if (!role) {
@@ -74,6 +74,7 @@ export class AuthService {
       userId: safeUser.id,
       email: safeUser.email,
       role: safeUser.role,
+      status: safeUser.status,
     });
 
     return { accessToken, user: safeUser };
@@ -85,6 +86,7 @@ export class AuthService {
       name: user.name,
       email: user.email,
       role: this.normalizeRole(user.role?.name),
+      status: user.status ?? 'ACTIVE',
     };
   }
 
@@ -92,6 +94,8 @@ export class AuthService {
     const value = String(role ?? '').toUpperCase();
     if (value.includes('ADMIN')) return 'ADMIN';
     if (value.includes('BIBLIOTECARIO') || value.includes('LIBRARIAN')) return 'BIBLIOTECARIO';
+    if (value.includes('DOCENTE') || value.includes('TEACHER')) return 'DOCENTE';
+    if (value.includes('ESTUDIANTE') || value.includes('STUDENT')) return 'ESTUDIANTE';
     if (value.includes('USUARIO') || value.includes('USER') || value.includes('CLIENTE')) return 'USUARIO';
     return 'INVITADO';
   }

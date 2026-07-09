@@ -26,7 +26,17 @@ const roles = [
   },
   {
     name: 'Usuario',
-    description: 'Consulta libros y gestiona sus préstamos.',
+    description: 'Rol base compatible para cuentas antiguas.',
+    permissions: ['books.read', 'loans.create', 'loans.read'],
+  },
+  {
+    name: 'Docente',
+    description: 'Consulta libros y accede a préstamos con mayor plazo.',
+    permissions: ['books.read', 'loans.create', 'loans.read'],
+  },
+  {
+    name: 'Estudiante',
+    description: 'Consulta libros, solicita préstamos y administra su historial.',
     permissions: ['books.read', 'loans.create', 'loans.read'],
   },
   {
@@ -174,15 +184,30 @@ async function main() {
   ];
 
   for (const book of books) {
-    await prisma.book.upsert({
+    const savedBook = await prisma.book.upsert({
       where: { isbn: book.isbn },
       update: book,
       create: book,
     });
+
+    const copiesCount = await prisma.bookCopy.count({ where: { bookId: savedBook.id } });
+    if (copiesCount === 0) {
+      for (let index = 1; index <= Math.max(savedBook.stock, 1); index += 1) {
+        await prisma.bookCopy.create({
+          data: {
+            bookId: savedBook.id,
+            code: `LIB-${savedBook.id}-${String(index).padStart(3, '0')}`,
+            status: savedBook.available ? 'DISPONIBLE' : 'MANTENIMIENTO',
+          },
+        });
+      }
+    }
   }
 
   const adminRoleId = roleMap.get('Administrador');
   const librarianRoleId = roleMap.get('Bibliotecario');
+  const teacherRoleId = roleMap.get('Docente');
+  const studentRoleId = roleMap.get('Estudiante') ?? roleMap.get('Usuario');
 
   if (adminRoleId) {
     await prisma.user.upsert({
@@ -214,6 +239,44 @@ async function main() {
         email: 'jssarmiento@sudamericano.edu.ec',
         password: await bcrypt.hash('biblio102938', 10),
         roleId: librarianRoleId,
+      },
+    });
+  }
+
+  if (teacherRoleId) {
+    await prisma.user.upsert({
+      where: { email: 'docente@biblioteca.edu.ec' },
+      update: {
+        name: 'Docente Demo',
+        password: await bcrypt.hash('docente102938', 10),
+        roleId: teacherRoleId,
+        status: 'ACTIVE',
+      },
+      create: {
+        name: 'Docente Demo',
+        email: 'docente@biblioteca.edu.ec',
+        password: await bcrypt.hash('docente102938', 10),
+        roleId: teacherRoleId,
+        status: 'ACTIVE',
+      },
+    });
+  }
+
+  if (studentRoleId) {
+    await prisma.user.upsert({
+      where: { email: 'estudiante@biblioteca.edu.ec' },
+      update: {
+        name: 'Estudiante Demo',
+        password: await bcrypt.hash('estudiante102938', 10),
+        roleId: studentRoleId,
+        status: 'ACTIVE',
+      },
+      create: {
+        name: 'Estudiante Demo',
+        email: 'estudiante@biblioteca.edu.ec',
+        password: await bcrypt.hash('estudiante102938', 10),
+        roleId: studentRoleId,
+        status: 'ACTIVE',
       },
     });
   }
