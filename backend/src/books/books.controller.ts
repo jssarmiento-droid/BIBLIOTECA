@@ -73,7 +73,7 @@ export class BooksController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN', 'BIBLIOTECARIO', 'USUARIO', 'DOCENTE', 'ESTUDIANTE')
+  @Roles('ADMIN', 'BIBLIOTECARIO', 'CLIENTE', 'USUARIO', 'PROFESOR', 'DOCENTE', 'ESTUDIANTE')
   @Post(':id/ratings')
   rateBook(
     @Param('id') id: string,

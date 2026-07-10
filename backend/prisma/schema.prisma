@@ -75,6 +75,8 @@ model Book {
   title       String
   isbn        String   @unique
   description String?
+  publicationYear Int?
+  publisher   String?
   stock       Int      @default(1)
   available   Boolean  @default(true)
   imageUrl    String?
@@ -113,6 +115,11 @@ model Loan {
   dueDate     DateTime?
   returnDate  DateTime?
   status      String    @default("Pendiente")
+  documentType String?
+  baseCost    Float     @default(0)
+  discountPercent Int   @default(0)
+  finalCost   Float     @default(0)
+  fineAmount  Float     @default(0)
   renewalRequested Boolean @default(false)
 
   user         User     @relation(fields: [userId], references: [id])

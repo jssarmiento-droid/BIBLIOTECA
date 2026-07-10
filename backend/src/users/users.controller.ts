@@ -10,7 +10,7 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'SUBADMIN')
   @Get()
   findAll() {
     return this.usersService.findAll();
@@ -21,19 +21,19 @@ export class UsersController {
     return this.usersService.findOneForRequest(Number(id), user);
   }
 
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'SUBADMIN')
   @Post()
   create(@Body() data: Record<string, unknown>) {
     return this.usersService.create(data);
   }
 
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'SUBADMIN')
   @Patch(':id')
   update(@Param('id') id: string, @Body() data: Record<string, unknown>) {
     return this.usersService.update(Number(id), data);
   }
 
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'SUBADMIN')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usersService.remove(Number(id));

@@ -229,6 +229,10 @@ export class BooksService {
     if (!partial || data.title !== undefined) book.title = String(data.title ?? '');
     if (!partial || data.isbn !== undefined) book.isbn = String(data.isbn ?? '');
     if (data.description !== undefined) book.description = String(data.description);
+    if (data.publicationYear !== undefined) {
+      book.publicationYear = data.publicationYear ? Number(data.publicationYear) : null;
+    }
+    if (data.publisher !== undefined) book.publisher = String(data.publisher);
     if (data.stock !== undefined) book.stock = Number(data.stock);
     if (data.available !== undefined) book.available = Boolean(data.available);
     if (data.imageUrl !== undefined) book.imageUrl = String(data.imageUrl);

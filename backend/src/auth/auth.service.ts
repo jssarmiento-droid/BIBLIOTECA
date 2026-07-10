@@ -46,11 +46,11 @@ export class AuthService {
     }
 
     const role = await this.prisma.role.findFirst({
-      where: { name: { in: ['Estudiante', 'ESTUDIANTE', 'Usuario', 'USUARIO', 'User', 'USER'] } },
+      where: { name: { in: ['Cliente', 'CLIENTE', 'Usuario', 'USUARIO', 'User', 'USER'] } },
     });
 
     if (!role) {
-      throw new UnauthorizedException('No se encontró el rol de usuario');
+      throw new UnauthorizedException('No se encontró el rol de cliente');
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -92,11 +92,12 @@ export class AuthService {
 
   private normalizeRole(role?: string) {
     const value = String(role ?? '').toUpperCase();
+    if (value.includes('SUBADMIN') || value.includes('SUBADMINISTRADOR')) return 'SUBADMIN';
     if (value.includes('ADMIN')) return 'ADMIN';
     if (value.includes('BIBLIOTECARIO') || value.includes('LIBRARIAN')) return 'BIBLIOTECARIO';
-    if (value.includes('DOCENTE') || value.includes('TEACHER')) return 'DOCENTE';
+    if (value.includes('PROFESOR') || value.includes('DOCENTE') || value.includes('TEACHER')) return 'PROFESOR';
     if (value.includes('ESTUDIANTE') || value.includes('STUDENT')) return 'ESTUDIANTE';
-    if (value.includes('USUARIO') || value.includes('USER') || value.includes('CLIENTE')) return 'USUARIO';
+    if (value.includes('CLIENTE') || value.includes('USUARIO') || value.includes('USER')) return 'CLIENTE';
     return 'INVITADO';
   }
 }

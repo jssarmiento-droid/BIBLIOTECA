@@ -25,8 +25,23 @@ const roles = [
     permissions: ['books.read', 'books.manage', 'loans.manage'],
   },
   {
+    name: 'Subadministrador',
+    description: 'Apoya la gestión de usuarios y préstamos sin administrar permisos globales.',
+    permissions: ['books.read', 'users.manage', 'loans.manage'],
+  },
+  {
+    name: 'Cliente',
+    description: 'Rol base para cuentas nuevas con préstamos de 10 días y tarifa completa.',
+    permissions: ['books.read', 'loans.create', 'loans.read'],
+  },
+  {
     name: 'Usuario',
     description: 'Rol base compatible para cuentas antiguas.',
+    permissions: ['books.read', 'loans.create', 'loans.read'],
+  },
+  {
+    name: 'Profesor',
+    description: 'Consulta libros y accede a préstamos gratuitos con plazo extendido.',
     permissions: ['books.read', 'loans.create', 'loans.read'],
   },
   {
@@ -397,11 +412,40 @@ async function main() {
     },
   ];
 
+  const bookMetadata = new Map<string, { publicationYear: number; publisher: string }>([
+    ['9780307474728', { publicationYear: 1967, publisher: 'Editorial Sudamericana' }],
+    ['9780553293357', { publicationYear: 1951, publisher: 'Bantam Spectra' }],
+    ['9780141439518', { publicationYear: 1813, publisher: 'Penguin Classics' }],
+    ['9780062316097', { publicationYear: 2011, publisher: 'Harper' }],
+    ['9780000000002', { publicationYear: 2024, publisher: 'Biblioteca Digital' }],
+    ['9780451524935', { publicationYear: 1949, publisher: 'Signet Classics' }],
+    ['9780451526342', { publicationYear: 1945, publisher: 'Signet Classics' }],
+    ['9780061120084', { publicationYear: 1960, publisher: 'Harper Perennial' }],
+    ['9780743273565', { publicationYear: 1925, publisher: 'Scribner' }],
+    ['9780547928227', { publicationYear: 1937, publisher: 'Houghton Mifflin Harcourt' }],
+    ['9780618640157', { publicationYear: 1954, publisher: 'Houghton Mifflin Harcourt' }],
+    ['9788424119893', { publicationYear: 1605, publisher: 'Editorial Everest' }],
+    ['9780486282114', { publicationYear: 1818, publisher: 'Dover Publications' }],
+    ['9780062073501', { publicationYear: 1934, publisher: 'William Morrow' }],
+    ['9780062073488', { publicationYear: 1939, publisher: 'William Morrow' }],
+    ['9781451673319', { publicationYear: 1953, publisher: 'Simon & Schuster' }],
+    ['9780060850524', { publicationYear: 1932, publisher: 'Harper Perennial' }],
+    ['9780316769488', { publicationYear: 1951, publisher: 'Little, Brown and Company' }],
+    ['9780061122415', { publicationYear: 1988, publisher: 'HarperOne' }],
+    ['9780156012195', { publicationYear: 1943, publisher: 'Harcourt' }],
+    ['9781503280786', { publicationYear: 1851, publisher: 'CreateSpace Classics' }],
+    ['9780486411095', { publicationYear: 1897, publisher: 'Dover Publications' }],
+    ['9780451419439', { publicationYear: 1862, publisher: 'Signet Classics' }],
+    ['9780143035008', { publicationYear: 1877, publisher: 'Penguin Classics' }],
+  ]);
+
   for (const book of books) {
+    const metadata = bookMetadata.get(book.isbn);
+    const bookData = metadata ? { ...book, ...metadata } : book;
     const savedBook = await prisma.book.upsert({
-      where: { isbn: book.isbn },
-      update: book,
-      create: book,
+      where: { isbn: bookData.isbn },
+      update: bookData,
+      create: bookData,
     });
 
     const copiesCount = await prisma.bookCopy.count({ where: { bookId: savedBook.id } });
@@ -420,8 +464,10 @@ async function main() {
 
   const adminRoleId = roleMap.get('Administrador');
   const librarianRoleId = roleMap.get('Bibliotecario');
-  const teacherRoleId = roleMap.get('Docente');
-  const studentRoleId = roleMap.get('Estudiante') ?? roleMap.get('Usuario');
+  const subadminRoleId = roleMap.get('Subadministrador');
+  const clientRoleId = roleMap.get('Cliente') ?? roleMap.get('Usuario');
+  const teacherRoleId = roleMap.get('Profesor') ?? roleMap.get('Docente');
+  const studentRoleId = roleMap.get('Estudiante') ?? roleMap.get('Cliente') ?? roleMap.get('Usuario');
 
   if (adminRoleId) {
     await prisma.user.upsert({
@@ -457,19 +503,57 @@ async function main() {
     });
   }
 
+  if (subadminRoleId) {
+    await prisma.user.upsert({
+      where: { email: 'subadmin@biblioteca.edu.ec' },
+      update: {
+        name: 'Subadministrador',
+        password: await bcrypt.hash('subadmin102938', 10),
+        roleId: subadminRoleId,
+        status: 'ACTIVE',
+      },
+      create: {
+        name: 'Subadministrador',
+        email: 'subadmin@biblioteca.edu.ec',
+        password: await bcrypt.hash('subadmin102938', 10),
+        roleId: subadminRoleId,
+        status: 'ACTIVE',
+      },
+    });
+  }
+
+  if (clientRoleId) {
+    await prisma.user.upsert({
+      where: { email: 'cliente@biblioteca.edu.ec' },
+      update: {
+        name: 'Cliente',
+        password: await bcrypt.hash('cliente102938', 10),
+        roleId: clientRoleId,
+        status: 'ACTIVE',
+      },
+      create: {
+        name: 'Cliente',
+        email: 'cliente@biblioteca.edu.ec',
+        password: await bcrypt.hash('cliente102938', 10),
+        roleId: clientRoleId,
+        status: 'ACTIVE',
+      },
+    });
+  }
+
   if (teacherRoleId) {
     await prisma.user.upsert({
-      where: { email: 'docente@biblioteca.edu.ec' },
+      where: { email: 'profesor@biblioteca.edu.ec' },
       update: {
-        name: 'Docente',
-        password: await bcrypt.hash('docente102938', 10),
+        name: 'Profesor',
+        password: await bcrypt.hash('profesor102938', 10),
         roleId: teacherRoleId,
         status: 'ACTIVE',
       },
       create: {
-        name: 'Docente',
-        email: 'docente@biblioteca.edu.ec',
-        password: await bcrypt.hash('docente102938', 10),
+        name: 'Profesor',
+        email: 'profesor@biblioteca.edu.ec',
+        password: await bcrypt.hash('profesor102938', 10),
         roleId: teacherRoleId,
         status: 'ACTIVE',
       },
