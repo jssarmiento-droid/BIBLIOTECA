@@ -47,6 +47,12 @@ export class LoansController {
   }
 
   @Roles('ADMIN', 'SUBADMIN', 'BIBLIOTECARIO')
+  @Post(':id/renewal/approve')
+  approveRenewal(@Param('id') id: string) {
+    return this.loansService.approveRenewal(Number(id));
+  }
+
+  @Roles('ADMIN', 'SUBADMIN', 'BIBLIOTECARIO')
   @Patch(':id')
   update(@Param('id') id: string, @Body() data: Record<string, unknown>) {
     return this.loansService.update(Number(id), data);

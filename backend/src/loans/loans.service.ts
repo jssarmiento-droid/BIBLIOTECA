@@ -151,6 +151,25 @@ export class LoansService {
     }).then((updated) => this.withoutUserPassword(updated));
   }
 
+  async approveRenewal(id: number) {
+    const loan = await this.findOne(id);
+    if (this.normalizeStatus(loan.status) !== 'Activo') {
+      throw new BadRequestException('Solo se pueden renovar préstamos activos');
+    }
+    if (!loan.renewalRequested) {
+      throw new BadRequestException('Este préstamo no tiene una solicitud de renovación pendiente');
+    }
+
+    return this.prisma.loan.update({
+      where: { id },
+      data: {
+        dueDate: this.calculateDueDate(loan.user?.role?.name ?? loan.user?.role),
+        renewalRequested: false,
+      },
+      include: { user: { include: { role: true } }, book: true, bookCopy: true },
+    }).then((updated) => this.withoutUserPassword(updated));
+  }
+
   async reserveBook(bookId: number, user: any) {
     const userId = Number(user.sub ?? user.userId);
     await this.assertUserCanBorrow(userId);
