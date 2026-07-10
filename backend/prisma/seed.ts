@@ -182,7 +182,7 @@ async function main() {
     {
       title: 'Cien años de soledad',
       isbn: '9780307474728',
-      description: 'Clásico de la literatura latinoamericana.',
+      description: 'Cien años de soledad, escrita por Gabriel García Márquez y publicada en 1967, narra la historia de siete generaciones de la familia Buendía en el pueblo ficticio de Macondo. La novela relata el ascenso y la caída de este linaje, marcado por el incesto, la fatalidad, las guerras y una profunda soledad generacional, todo entrelazado con elementos de realismo mágico.',
       stock: 5,
       imageUrl: 'https://covers.openlibrary.org/b/isbn/9780307474728-L.jpg',
       authorId: garciaMarquez.id,
@@ -191,7 +191,7 @@ async function main() {
     {
       title: 'Fundación',
       isbn: '9780553293357',
-      description: 'Saga esencial de ciencia ficción.',
+      description: 'En un Imperio Galáctico en decadencia, el matemático Hari Seldon utiliza la "psicohistoria" (matemáticas aplicadas a la sociología) para predecir su inminente colapso y 30.000 años de barbarie. Para reducir este caos a solo un milenio, Seldon exilia a las mejores mentes al planeta Términus para crear la Fundación.',
       stock: 4,
       imageUrl: 'https://covers.openlibrary.org/b/isbn/9780553293357-L.jpg',
       authorId: asimov.id,
@@ -200,7 +200,7 @@ async function main() {
     {
       title: 'Orgullo y prejuicio',
       isbn: '9780141439518',
-      description: 'Novela clásica inglesa.',
+      description: 'Orgullo y Prejuicio, escrita por Jane Austen, es una comedia romántica clásica de la Inglaterra del siglo XIX. Narra la historia de Elizabeth Bennet, una joven independiente, y el adinerado señor Darcy, quienes deben superar sus propios defectos: el orgullo de clase de él y los prejuicios precipitados de ella, para descubrir su verdadero amor.',
       stock: 3,
       imageUrl: 'https://covers.openlibrary.org/b/isbn/9780141439518-L.jpg',
       authorId: austen.id,
@@ -209,7 +209,7 @@ async function main() {
     {
       title: 'Sapiens',
       isbn: '9780062316097',
-      description: 'Breve historia de la humanidad.',
+      description: 'Sapiens: De animales a dioses de Yuval Noah Harari explora la evolución de la humanidad a través de cuatro revoluciones: Cognitiva, Agrícola, Científica y la unificación del mundo. Argumenta que el dominio del Homo sapiens se debe a su capacidad única para crear y creer en ficciones compartidas —como el dinero, las religiones, las leyes y los imperios—, lo que permite la cooperación masiva entre desconocidos.',
       stock: 6,
       imageUrl: 'https://covers.openlibrary.org/b/isbn/9780062316097-L.jpg',
       authorId: harari.id,
@@ -218,7 +218,7 @@ async function main() {
     {
       title: 'Introducción a la programación',
       isbn: '9780000000002',
-      description: 'Libro base para estudiantes de tecnología.',
+      description: 'El texto funciona como una guía no técnica y libre de matemáticas complejas orientada a que cualquier principiante aprenda a "pensar como programador". En lugar de enseñar las reglas rígidas de sintaxis de un lenguaje como Java, C++ o Python, el libro utiliza pseudocódigo en español y diagramas de flujo como herramientas universales para diseñar algoritmos efectivos.',
       stock: 8,
       imageUrl: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=800&q=80',
       authorId: asimov.id,
@@ -227,7 +227,7 @@ async function main() {
     {
       title: '1984',
       isbn: '9780451524935',
-      description: 'Una distopía sobre vigilancia, propaganda y control político.',
+      description: '1984, escrita por George Orwell y publicada en 1949, es una novela clásica de ciencia ficción distópica. La historia advierte sobre los peligros de los regímenes totalitarios, explorando cómo un gobierno puede anular por completo la libertad individual, la privacidad, la historia e incluso el pensamiento crítico.',
       stock: 6,
       imageUrl: 'https://covers.openlibrary.org/b/isbn/9780451524935-L.jpg',
       authorId: orwell.id,
@@ -236,7 +236,7 @@ async function main() {
     {
       title: 'Rebelión en la granja',
       isbn: '9780451526342',
-      description: 'Fábula política sobre poder, corrupción y revolución.',
+      description: 'Rebelión en la granja es una novela satírica de George Orwell que narra cómo los animales de una granja se rebelan contra su dueño humano para crear una sociedad igualitaria. Sin embargo, la corrupción y el ansia de poder de los cerdos líderes transforman la utopía en una dictadura totalitaria.',
       stock: 5,
       imageUrl: 'https://covers.openlibrary.org/b/isbn/9780451526342-L.jpg',
       authorId: orwell.id,
@@ -245,7 +245,7 @@ async function main() {
     {
       title: 'Matar a un ruiseñor',
       isbn: '9780061120084',
-      description: 'Novela sobre justicia, prejuicio y crecimiento moral en el sur estadounidense.',
+      description: 'Matar a un ruiseñor de Harper Lee (publicada en 1960) narra la historia de Scout Finch, una niña que crece en un pueblo de Alabama durante la Gran Depresión. Su padre, el abogado Atticus Finch, defiende a un hombre negro acusado injustamente de violación, mientras Scout y suhermano Jem descubren el valor y enfrentan los prejuicios raciales de su comunidad.',
       stock: 4,
       imageUrl: 'https://covers.openlibrary.org/b/isbn/9780061120084-L.jpg',
       authorId: harperLee.id,
@@ -254,7 +254,7 @@ async function main() {
     {
       title: 'El gran Gatsby',
       isbn: '9780743273565',
-      description: 'Retrato elegante y amargo del sueño americano en los años veinte.',
+      description: '"El gran Gatsby", a través de los ojos del narrador, Nick Carraway, retrata aquella alocada década de los años veinte, marcada por la ley seca, el jazz y las grandes fiestas que afloraban sobre un mundo de negocios poco lícitos, corrupciones y sueños inalcanzables.',
       stock: 4,
       imageUrl: 'https://covers.openlibrary.org/b/isbn/9780743273565-L.jpg',
       authorId: fitzgerald.id,
@@ -263,7 +263,7 @@ async function main() {
     {
       title: 'El Hobbit',
       isbn: '9780547928227',
-      description: 'Aventura fantástica de Bilbo Bolsón hacia la Montaña Solitaria.',
+      description: 'Dentro de dicha ficción, el argumento de El hobbit se sitúa en el año 2941 de la Tercera Edad del Sol, y narra la historia del hobbit Bilbo Bolsón, que junto con el mago Gandalf y un grupo de enanos, vive una aventura en busca del tesoro custodiado por el dragón Smaug en la lejana Montaña Solitaria.',
       stock: 7,
       imageUrl: 'https://covers.openlibrary.org/b/isbn/9780547928227-L.jpg',
       authorId: tolkien.id,
@@ -281,7 +281,7 @@ async function main() {
     {
       title: 'Don Quijote de la Mancha',
       isbn: '9788424119893',
-      description: 'Clásico universal sobre idealismo, locura, humor y aventura.',
+      description: 'Escrita por Miguel de Cervantes, la obra narra las aventuras de Alonso Quijano, un hidalgo que enloquece por leer obsesivamente libros de caballerías. Convencido de ser un caballero andante, adopta el nombre de Don Quijote de la Mancha y recorre España junto a su fiel escudero, Sancho Panza, buscando hacer justicia y defender a los más necesitados.',
       stock: 5,
       imageUrl: 'https://covers.openlibrary.org/b/isbn/9788424119893-L.jpg',
       authorId: cervantes.id,
@@ -290,7 +290,7 @@ async function main() {
     {
       title: 'Frankenstein',
       isbn: '9780486282114',
-      description: 'Relato gótico sobre creación, responsabilidad y soledad.',
+      description: 'Victor Frankenstein, un joven y brillante científico suizo, descubre el secreto para dar vida a la materia inanimada y crea un ser de aspecto grotesco. Horrorizado por su creación, lo abandona. Rechazada por la sociedad y consumida por la soledad, la criatura busca venganza asesinando a los seres queridos de Víctor.',
       stock: 4,
       imageUrl: 'https://covers.openlibrary.org/b/isbn/9780486282114-L.jpg',
       authorId: shelley.id,
@@ -299,7 +299,7 @@ async function main() {
     {
       title: 'Asesinato en el Orient Express',
       isbn: '9780062073501',
-      description: 'Misterio clásico de Hércules Poirot a bordo de un tren detenido por la nieve.',
+      description: 'Ratchett fue asesinado colectivamente por doce de los pasajeros del Orient Express. El detective Hércules Poirot descubrió que todos ellos estaban vinculados a la familia Armstrong y decidieron vengar el secuestro y asesinato de la pequeña Daisy Armstrong. Cada uno de los cómplices le asestó una puñalada diferente mientras dormía.',
       stock: 4,
       imageUrl: 'https://covers.openlibrary.org/b/isbn/9780062073501-L.jpg',
       authorId: christie.id,
@@ -308,7 +308,7 @@ async function main() {
     {
       title: 'Diez negritos',
       isbn: '9780062073488',
-      description: 'Diez desconocidos son reunidos en una isla donde cada secreto puede ser mortal.',
+      description: 'Diez personas llegan a la Isla del Negro (Inglaterra), invitadas por un misterioso anfitrión llamado U.N. Owen. Tras la primera cena, una grabación de voz acusa a cada uno de los invitados de haber cometido un crimen en el pasado por el que la justicia no los ha castigado. Rápidamente, los invitados quedan atrapados por una tormenta y comienzan a morir uno a uno, exactamente de la misma manera en que lo describen los versos de la canción de los "diez negritos" que cuelga en sus habitaciones.',
       stock: 4,
       imageUrl: 'https://covers.openlibrary.org/b/isbn/9780062073488-L.jpg',
       authorId: christie.id,
@@ -317,7 +317,7 @@ async function main() {
     {
       title: 'Fahrenheit 451',
       isbn: '9781451673319',
-      description: 'Distopía sobre censura, memoria y el valor de los libros.',
+      description: 'Los temas principales en Fahrenheit 451 incluyen conocimiento vs. ignorancia y censura. La novela explora cómo suprimir libros conduce a la ignorancia social, mientras que el acceso al conocimiento empodera a las personas para pensar críticamente.',
       stock: 5,
       imageUrl: 'https://covers.openlibrary.org/b/isbn/9781451673319-L.jpg',
       authorId: bradbury.id,
@@ -326,7 +326,7 @@ async function main() {
     {
       title: 'Un mundo feliz',
       isbn: '9780060850524',
-      description: 'Sociedad futurista donde la felicidad artificial oculta pérdida de libertad.',
+      description: 'La novela es una distopía que anticipa el desarrollo en tecnología reproductiva, cultivos humanos, hipnopedia y manejo de las emociones por medio de drogas (soma) que, combinadas, cambian radicalmente la sociedad.',
       stock: 5,
       imageUrl: 'https://covers.openlibrary.org/b/isbn/9780060850524-L.jpg',
       authorId: huxley.id,
@@ -335,7 +335,7 @@ async function main() {
     {
       title: 'El guardián entre el centeno',
       isbn: '9780316769488',
-      description: 'Viaje íntimo de Holden Caulfield entre rebeldía, confusión y adolescencia.',
+      description: 'El guardián entre el centeno, escrita por J.D. Salinger y publicada en 1951, es una novela clásica que narra la historia de Holden Caulfield, un adolescente de 16 años expulsado de su internado. Tras ser expulsado, Holden deambula por la ciudad de Nueva York durante unos días mientras lidia con la alienación, la depresión y su incapacidad para aceptar la falsedad del mundo adulto.',
       stock: 4,
       imageUrl: 'https://covers.openlibrary.org/b/isbn/9780316769488-L.jpg',
       authorId: salinger.id,
@@ -344,7 +344,7 @@ async function main() {
     {
       title: 'El alquimista',
       isbn: '9780061122415',
-      description: 'Fábula espiritual sobre sueños, destino y búsqueda personal.',
+      description: 'El Alquimista de Paulo Coelho narra la historia de Santiago, un pastor andaluz que deja su rebaño para perseguir su "Leyenda Personal": un tesoro escondido cerca de las pirámides de Egipto. A través de un viaje iniciático por el desierto, aprende a escuchar a su corazón y a comprender el Alma del Mundo.',
       stock: 6,
       imageUrl: 'https://covers.openlibrary.org/b/isbn/9780061122415-L.jpg',
       authorId: coelho.id,
@@ -353,7 +353,7 @@ async function main() {
     {
       title: 'El principito',
       isbn: '9780156012195',
-      description: 'Historia poética sobre amistad, inocencia y lo esencial de la vida.',
+      description: 'El Principito, escrito por Antoine de Saint-Exupéry, es una novela corta que narra la historia de un piloto cuyo avión se avería en el desierto del Sahara. Allí conoce a un misterioso niño proveniente de otro asteroide, quien le enseña profundas lecciones sobre el amor, la amistad y la verdadera esencia de la vida.',
       stock: 8,
       imageUrl: 'https://covers.openlibrary.org/b/isbn/9780156012195-L.jpg',
       authorId: saintExupery.id,
@@ -362,7 +362,7 @@ async function main() {
     {
       title: 'Moby Dick',
       isbn: '9781503280786',
-      description: 'Aventura marítima y obsesión del capitán Ahab por la ballena blanca.',
+      description: 'Moby Dick narra la historia de la tripulación del barco ballenero Pequod y su capitán, Ahab. El capitán está consumido por una obsesión: vengarse de Moby Dick, un enorme cachalote blanco que en un viaje anterior le arrancó la pierna. La historia es narrada por el joven marinero Ismael.',
       stock: 3,
       imageUrl: 'https://covers.openlibrary.org/b/isbn/9781503280786-L.jpg',
       authorId: melville.id,
@@ -380,7 +380,7 @@ async function main() {
     {
       title: 'Los miserables',
       isbn: '9780451419439',
-      description: 'Monumental novela sobre redención, injusticia y esperanza social.',
+      description: 'La trama principal sigue a Jean Valjean, un exconvicto que pasó 19 años en prisión por robar una hogaza de pan. Tras ser ayudado por un bondadoso obispo, Valjean decide romper con su pasado y cambiar su vida. Sin embargo, el implacable inspector de policía Javert se obsesiona con perseguirlo, representando la justicia inflexible.',
       stock: 4,
       imageUrl: 'https://covers.openlibrary.org/b/isbn/9780451419439-L.jpg',
       authorId: hugo.id,
@@ -389,7 +389,7 @@ async function main() {
     {
       title: 'Anna Karenina',
       isbn: '9780143035008',
-      description: 'Drama ruso sobre amor, familia, deseo y presión social.',
+      description: 'Ana Karenina, escrita por León Tolstói y publicada en 1877, es una de las obras cumbres del realismo. La novela narra la trágica historia de una aristócrata rusa que desafía las convenciones sociales al abandonar a su esposo y a su hijo por un joven militar, enfrentando el rechazo y la condena de la alta sociedad.',
       stock: 4,
       imageUrl: 'https://covers.openlibrary.org/b/isbn/9780143035008-L.jpg',
       authorId: tolstoy.id,
