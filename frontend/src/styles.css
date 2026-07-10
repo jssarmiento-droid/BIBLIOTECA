@@ -228,6 +228,14 @@ body {
   background: #fffaf2;
 }
 
+.book-card .ant-card-body {
+  padding: 14px !important;
+}
+
+.book-card .ant-card-actions > li {
+  margin: 6px 0;
+}
+
 .book-card h4 {
   line-height: 1.2;
   margin: 0 !important;
@@ -244,7 +252,7 @@ body {
   display: grid;
   font-size: 40px;
   font-weight: 900;
-  height: 112px;
+  height: 168px;
   overflow: hidden;
   place-items: center;
   position: relative;
@@ -274,7 +282,7 @@ body {
 
 .drawer-cover {
   font-size: 72px;
-  height: 220px;
+  height: 280px;
 }
 
 .recommendation-item {
@@ -382,11 +390,11 @@ body {
   }
 
   .book-initial {
-    height: 88px;
+    height: 140px;
   }
 
   .drawer-cover {
-    height: 160px;
+    height: 220px;
   }
 
   .ant-card-body {
