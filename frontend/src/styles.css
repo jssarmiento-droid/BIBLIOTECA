@@ -69,6 +69,11 @@ body {
   padding: 12px;
   position: absolute;
   right: 16px;
+  min-width: 0;
+}
+
+.sider-session > div {
+  min-width: 0;
 }
 
 .sider-session strong {
@@ -94,24 +99,40 @@ body {
   position: sticky;
   top: 0;
   z-index: 10;
+  min-width: 0;
 }
 
 .quick-search {
   max-width: 420px;
+  min-width: 160px;
 }
 
 .user-area {
   margin-left: auto;
+  max-width: 320px;
+  min-width: 0;
 }
 
 .user-copy {
   display: grid;
+  line-height: 1.15;
+  max-width: 260px;
+  min-width: 0;
   text-align: right;
+}
+
+.user-copy strong {
+  font-size: 13px;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .user-copy small {
   color: #6d7b88;
-  max-width: 280px;
+  font-size: 11px;
+  max-width: 260px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -120,7 +141,10 @@ body {
 .avatar-button {
   align-items: center;
   display: inline-flex !important;
+  flex: 0 0 auto;
+  height: 34px !important;
   justify-content: center;
+  width: 34px !important;
 }
 
 .page-content {
