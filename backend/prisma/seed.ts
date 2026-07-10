@@ -461,13 +461,13 @@ async function main() {
     await prisma.user.upsert({
       where: { email: 'docente@biblioteca.edu.ec' },
       update: {
-        name: 'Docente Demo',
+        name: 'Docente',
         password: await bcrypt.hash('docente102938', 10),
         roleId: teacherRoleId,
         status: 'ACTIVE',
       },
       create: {
-        name: 'Docente Demo',
+        name: 'Docente',
         email: 'docente@biblioteca.edu.ec',
         password: await bcrypt.hash('docente102938', 10),
         roleId: teacherRoleId,
@@ -480,13 +480,13 @@ async function main() {
     await prisma.user.upsert({
       where: { email: 'estudiante@biblioteca.edu.ec' },
       update: {
-        name: 'Estudiante Demo',
+        name: 'Estudiante',
         password: await bcrypt.hash('estudiante102938', 10),
         roleId: studentRoleId,
         status: 'ACTIVE',
       },
       create: {
-        name: 'Estudiante Demo',
+        name: 'Estudiante',
         email: 'estudiante@biblioteca.edu.ec',
         password: await bcrypt.hash('estudiante102938', 10),
         roleId: studentRoleId,
