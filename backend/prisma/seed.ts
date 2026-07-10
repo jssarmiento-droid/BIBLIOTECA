@@ -96,6 +96,9 @@ async function main() {
     { name: 'Ciencia', description: 'Textos científicos y divulgativos.' },
     { name: 'Tecnología', description: 'Programación, datos e informática.' },
     { name: 'Historia', description: 'Historia universal y regional.' },
+    { name: 'Fantasía', description: 'Mundos imaginarios, aventuras épicas y magia.' },
+    { name: 'Distopía', description: 'Futuros críticos y sociedades opresivas.' },
+    { name: 'Misterio', description: 'Intriga, investigación y suspenso.' },
   ];
 
   for (const category of categories) {
@@ -111,6 +114,22 @@ async function main() {
     { name: 'Isaac Asimov', biography: 'Autor de ciencia ficción y divulgación.' },
     { name: 'Jane Austen', biography: 'Novelista británica.' },
     { name: 'Yuval Noah Harari', biography: 'Historiador y ensayista.' },
+    { name: 'George Orwell', biography: 'Novelista y ensayista británico.' },
+    { name: 'Harper Lee', biography: 'Novelista estadounidense.' },
+    { name: 'F. Scott Fitzgerald', biography: 'Autor estadounidense de la generación perdida.' },
+    { name: 'J.R.R. Tolkien', biography: 'Escritor y filólogo británico.' },
+    { name: 'Miguel de Cervantes', biography: 'Escritor español del Siglo de Oro.' },
+    { name: 'Mary Shelley', biography: 'Novelista británica precursora de la ciencia ficción.' },
+    { name: 'Agatha Christie', biography: 'Autora británica de misterio.' },
+    { name: 'Ray Bradbury', biography: 'Escritor estadounidense de ciencia ficción.' },
+    { name: 'Aldous Huxley', biography: 'Escritor británico de ficción especulativa.' },
+    { name: 'J.D. Salinger', biography: 'Novelista estadounidense.' },
+    { name: 'Paulo Coelho', biography: 'Escritor brasileño.' },
+    { name: 'Antoine de Saint-Exupéry', biography: 'Escritor y aviador francés.' },
+    { name: 'Herman Melville', biography: 'Novelista estadounidense.' },
+    { name: 'Bram Stoker', biography: 'Novelista irlandés.' },
+    { name: 'Victor Hugo', biography: 'Novelista y poeta francés.' },
+    { name: 'Leo Tolstoy', biography: 'Novelista ruso.' },
   ];
 
   for (const author of authors) {
@@ -134,11 +153,30 @@ async function main() {
   const science = await prisma.category.findUniqueOrThrow({ where: { name: 'Ciencia' } });
   const technology = await prisma.category.findUniqueOrThrow({ where: { name: 'Tecnología' } });
   const history = await prisma.category.findUniqueOrThrow({ where: { name: 'Historia' } });
+  const fantasy = await prisma.category.findUniqueOrThrow({ where: { name: 'Fantasía' } });
+  const dystopia = await prisma.category.findUniqueOrThrow({ where: { name: 'Distopía' } });
+  const mystery = await prisma.category.findUniqueOrThrow({ where: { name: 'Misterio' } });
 
   const garciaMarquez = await prisma.author.findFirstOrThrow({ where: { name: 'Gabriel García Márquez' } });
   const asimov = await prisma.author.findFirstOrThrow({ where: { name: 'Isaac Asimov' } });
   const austen = await prisma.author.findFirstOrThrow({ where: { name: 'Jane Austen' } });
   const harari = await prisma.author.findFirstOrThrow({ where: { name: 'Yuval Noah Harari' } });
+  const orwell = await prisma.author.findFirstOrThrow({ where: { name: 'George Orwell' } });
+  const harperLee = await prisma.author.findFirstOrThrow({ where: { name: 'Harper Lee' } });
+  const fitzgerald = await prisma.author.findFirstOrThrow({ where: { name: 'F. Scott Fitzgerald' } });
+  const tolkien = await prisma.author.findFirstOrThrow({ where: { name: 'J.R.R. Tolkien' } });
+  const cervantes = await prisma.author.findFirstOrThrow({ where: { name: 'Miguel de Cervantes' } });
+  const shelley = await prisma.author.findFirstOrThrow({ where: { name: 'Mary Shelley' } });
+  const christie = await prisma.author.findFirstOrThrow({ where: { name: 'Agatha Christie' } });
+  const bradbury = await prisma.author.findFirstOrThrow({ where: { name: 'Ray Bradbury' } });
+  const huxley = await prisma.author.findFirstOrThrow({ where: { name: 'Aldous Huxley' } });
+  const salinger = await prisma.author.findFirstOrThrow({ where: { name: 'J.D. Salinger' } });
+  const coelho = await prisma.author.findFirstOrThrow({ where: { name: 'Paulo Coelho' } });
+  const saintExupery = await prisma.author.findFirstOrThrow({ where: { name: 'Antoine de Saint-Exupéry' } });
+  const melville = await prisma.author.findFirstOrThrow({ where: { name: 'Herman Melville' } });
+  const stoker = await prisma.author.findFirstOrThrow({ where: { name: 'Bram Stoker' } });
+  const hugo = await prisma.author.findFirstOrThrow({ where: { name: 'Victor Hugo' } });
+  const tolstoy = await prisma.author.findFirstOrThrow({ where: { name: 'Leo Tolstoy' } });
 
   const books = [
     {
@@ -185,6 +223,177 @@ async function main() {
       imageUrl: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=800&q=80',
       authorId: asimov.id,
       categoryId: technology.id,
+    },
+    {
+      title: '1984',
+      isbn: '9780451524935',
+      description: 'Una distopía sobre vigilancia, propaganda y control político.',
+      stock: 6,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9780451524935-L.jpg',
+      authorId: orwell.id,
+      categoryId: dystopia.id,
+    },
+    {
+      title: 'Rebelión en la granja',
+      isbn: '9780451526342',
+      description: 'Fábula política sobre poder, corrupción y revolución.',
+      stock: 5,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9780451526342-L.jpg',
+      authorId: orwell.id,
+      categoryId: dystopia.id,
+    },
+    {
+      title: 'Matar a un ruiseñor',
+      isbn: '9780061120084',
+      description: 'Novela sobre justicia, prejuicio y crecimiento moral en el sur estadounidense.',
+      stock: 4,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9780061120084-L.jpg',
+      authorId: harperLee.id,
+      categoryId: literature.id,
+    },
+    {
+      title: 'El gran Gatsby',
+      isbn: '9780743273565',
+      description: 'Retrato elegante y amargo del sueño americano en los años veinte.',
+      stock: 4,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9780743273565-L.jpg',
+      authorId: fitzgerald.id,
+      categoryId: literature.id,
+    },
+    {
+      title: 'El Hobbit',
+      isbn: '9780547928227',
+      description: 'Aventura fantástica de Bilbo Bolsón hacia la Montaña Solitaria.',
+      stock: 7,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9780547928227-L.jpg',
+      authorId: tolkien.id,
+      categoryId: fantasy.id,
+    },
+    {
+      title: 'El señor de los anillos',
+      isbn: '9780618640157',
+      description: 'Épica fantástica sobre amistad, sacrificio y la lucha contra la oscuridad.',
+      stock: 5,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9780618640157-L.jpg',
+      authorId: tolkien.id,
+      categoryId: fantasy.id,
+    },
+    {
+      title: 'Don Quijote de la Mancha',
+      isbn: '9788424119893',
+      description: 'Clásico universal sobre idealismo, locura, humor y aventura.',
+      stock: 5,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9788424119893-L.jpg',
+      authorId: cervantes.id,
+      categoryId: literature.id,
+    },
+    {
+      title: 'Frankenstein',
+      isbn: '9780486282114',
+      description: 'Relato gótico sobre creación, responsabilidad y soledad.',
+      stock: 4,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9780486282114-L.jpg',
+      authorId: shelley.id,
+      categoryId: science.id,
+    },
+    {
+      title: 'Asesinato en el Orient Express',
+      isbn: '9780062073501',
+      description: 'Misterio clásico de Hércules Poirot a bordo de un tren detenido por la nieve.',
+      stock: 4,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9780062073501-L.jpg',
+      authorId: christie.id,
+      categoryId: mystery.id,
+    },
+    {
+      title: 'Diez negritos',
+      isbn: '9780062073488',
+      description: 'Diez desconocidos son reunidos en una isla donde cada secreto puede ser mortal.',
+      stock: 4,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9780062073488-L.jpg',
+      authorId: christie.id,
+      categoryId: mystery.id,
+    },
+    {
+      title: 'Fahrenheit 451',
+      isbn: '9781451673319',
+      description: 'Distopía sobre censura, memoria y el valor de los libros.',
+      stock: 5,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9781451673319-L.jpg',
+      authorId: bradbury.id,
+      categoryId: dystopia.id,
+    },
+    {
+      title: 'Un mundo feliz',
+      isbn: '9780060850524',
+      description: 'Sociedad futurista donde la felicidad artificial oculta pérdida de libertad.',
+      stock: 5,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9780060850524-L.jpg',
+      authorId: huxley.id,
+      categoryId: dystopia.id,
+    },
+    {
+      title: 'El guardián entre el centeno',
+      isbn: '9780316769488',
+      description: 'Viaje íntimo de Holden Caulfield entre rebeldía, confusión y adolescencia.',
+      stock: 4,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9780316769488-L.jpg',
+      authorId: salinger.id,
+      categoryId: literature.id,
+    },
+    {
+      title: 'El alquimista',
+      isbn: '9780061122415',
+      description: 'Fábula espiritual sobre sueños, destino y búsqueda personal.',
+      stock: 6,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9780061122415-L.jpg',
+      authorId: coelho.id,
+      categoryId: literature.id,
+    },
+    {
+      title: 'El principito',
+      isbn: '9780156012195',
+      description: 'Historia poética sobre amistad, inocencia y lo esencial de la vida.',
+      stock: 8,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9780156012195-L.jpg',
+      authorId: saintExupery.id,
+      categoryId: literature.id,
+    },
+    {
+      title: 'Moby Dick',
+      isbn: '9781503280786',
+      description: 'Aventura marítima y obsesión del capitán Ahab por la ballena blanca.',
+      stock: 3,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9781503280786-L.jpg',
+      authorId: melville.id,
+      categoryId: literature.id,
+    },
+    {
+      title: 'Drácula',
+      isbn: '9780486411095',
+      description: 'Novela gótica que consolidó el mito moderno del vampiro.',
+      stock: 4,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9780486411095-L.jpg',
+      authorId: stoker.id,
+      categoryId: mystery.id,
+    },
+    {
+      title: 'Los miserables',
+      isbn: '9780451419439',
+      description: 'Monumental novela sobre redención, injusticia y esperanza social.',
+      stock: 4,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9780451419439-L.jpg',
+      authorId: hugo.id,
+      categoryId: literature.id,
+    },
+    {
+      title: 'Anna Karenina',
+      isbn: '9780143035008',
+      description: 'Drama ruso sobre amor, familia, deseo y presión social.',
+      stock: 4,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9780143035008-L.jpg',
+      authorId: tolstoy.id,
+      categoryId: literature.id,
     },
   ];
 

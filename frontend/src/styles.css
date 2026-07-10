@@ -309,6 +309,37 @@ body {
   height: 280px;
 }
 
+.compact-detail-cover {
+  height: 240px;
+}
+
+.detail-title-block h3 {
+  line-height: 1.1;
+  margin: 0 0 4px !important;
+}
+
+.detail-summary-card .ant-card-body {
+  padding: 12px !important;
+}
+
+.detail-summary-card .ant-statistic-title {
+  color: #617181;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.detail-summary-card .ant-statistic-content {
+  color: #17324a;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.detail-synopsis-card {
+  background: #fffaf2;
+  border-color: #eadfce;
+}
+
 .recommendation-item {
   border-radius: 8px;
   cursor: pointer;
