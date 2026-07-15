@@ -209,7 +209,7 @@ export class LoansService {
   private async approveLoan(id: number, currentLoan: any, updateData: Prisma.LoanUncheckedUpdateInput) {
     await this.assertUserCanBorrow(Number(currentLoan.userId));
 
-    return this.prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx) => {
       const copy = await tx.bookCopy.findFirst({
         where: { bookId: Number(currentLoan.bookId), status: 'DISPONIBLE' },
         orderBy: { createdAt: 'asc' },
@@ -231,7 +231,7 @@ export class LoansService {
         });
       }
 
-      const loan = await tx.loan.update({
+      await tx.loan.update({
         where: { id },
         data: {
           ...updateData,
@@ -239,15 +239,10 @@ export class LoansService {
           bookCopyId: copy?.id ?? currentLoan.bookCopyId ?? undefined,
           dueDate: updateData.dueDate ?? this.calculateDueDate(currentLoan.user?.role?.name ?? currentLoan.user?.role),
         },
-        include: {
-          user: { include: { role: true } },
-          book: { include: { author: true, category: true } },
-          bookCopy: true,
-        },
       });
-
-      return this.withoutUserPassword(loan);
     });
+
+    return this.findOne(id);
   }
 
   private async returnLoan(
@@ -256,7 +251,7 @@ export class LoansService {
     updateData: Prisma.LoanUncheckedUpdateInput,
     rawData: Record<string, unknown>,
   ) {
-    return this.prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx) => {
       if (this.normalizeStatus(currentLoan.status) === 'Activo') {
         if (currentLoan.bookCopyId) {
           await tx.bookCopy.update({
@@ -287,7 +282,7 @@ export class LoansService {
       const returnDate = rawData.returnDate ? updateData.returnDate as Date : new Date();
       const fineAmount = this.calculateFine(currentLoan, returnDate);
 
-      const loan = await tx.loan.update({
+      await tx.loan.update({
         where: { id },
         data: {
           ...updateData,
@@ -296,15 +291,10 @@ export class LoansService {
           returnDate,
           fineAmount,
         },
-        include: {
-          user: { include: { role: true } },
-          book: { include: { author: true, category: true } },
-          bookCopy: true,
-        },
       });
-
-      return this.withoutUserPassword(loan);
     });
+
+    return this.findOne(id);
   }
 
   private async assertUserCanBorrow(userId: number) {
