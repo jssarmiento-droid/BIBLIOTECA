@@ -101,20 +101,18 @@ export class BooksService {
 
   async findRecommendations(id: number) {
     const book = await this.findOne(id);
-    const [sameCategory, sameAuthor, mostLoaned, newArrivals] = await Promise.all([
-      this.prisma.book.findMany({
-        where: { id: { not: id }, categoryId: book.categoryId },
-        include: { author: true, category: true, ratings: true, copies: true },
-        take: 6,
-      }),
-      this.prisma.book.findMany({
-        where: { id: { not: id }, authorId: book.authorId },
-        include: { author: true, category: true, ratings: true, copies: true },
-        take: 6,
-      }),
-      this.findMostLoaned(),
-      this.findNewArrivals(),
-    ]);
+    const sameCategory = await this.prisma.book.findMany({
+      where: { id: { not: id }, categoryId: book.categoryId },
+      include: { author: true, category: true, ratings: true, copies: true },
+      take: 6,
+    });
+    const sameAuthor = await this.prisma.book.findMany({
+      where: { id: { not: id }, authorId: book.authorId },
+      include: { author: true, category: true, ratings: true, copies: true },
+      take: 6,
+    });
+    const mostLoaned = await this.findMostLoaned();
+    const newArrivals = await this.findNewArrivals();
 
     return {
       sameCategory,
